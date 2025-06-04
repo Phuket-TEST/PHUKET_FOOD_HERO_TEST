@@ -1,0 +1,1261 @@
+/* Import Kanit font from Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@400;700&display=swap');
+
+:root {
+    --primary-blue: #007bff; /* Blue color for buttons */
+    --dark-text: #333;
+    --light-text: #fff;
+    --grey-bg: #f4f4f4;
+    --header-bg: #fff;
+    --footer-bg: #333;
+    --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    --input-border: #ccc;
+    --input-focus-border: #007bff;
+    --sidebar-bg: #222; /* Dark background for sidebar */
+    --data-block-bg: #ADD8E6; /* Light blue for data blocks */
+    --upload-box-bg: #007bff; /* Blue for upload box */
+}
+
+body {
+    font-family: 'Kanit', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--grey-bg);
+    color: var(--dark-text);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Ensures footer stays at the bottom */
+}
+
+.header {
+    background-color: var(--header-bg);
+    padding: 10px 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+    font-size: 0.9em;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+}
+
+.contact-info span {
+    margin-right: 20px;
+    color: #555;
+}
+
+.sign-in a {
+    text-decoration: none;
+    color: var(--dark-text);
+    font-weight: bold;
+}
+
+.hero-section {
+    padding: 20px 0;
+    text-align: center;
+}
+
+.hero-section h1 {
+    color: var(--dark-text);
+    margin: 0;
+    font-size: 2.5em;
+    font-weight: 700;
+    letter-spacing: 2px;
+}
+
+.content-section {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column; /* Stack question and cards vertically */
+    justify-content: center; /* Center content vertically */
+    align-items: center; /* Center content horizontally */
+    padding: 40px 20px; /* Adjust padding as needed */
+    /* TODO: Replace with your actual background image path */
+    background-image: url('images/phukettrash.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+}
+
+/* Add overlay to make text and buttons stand out */
+.content-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6); /* Increased opacity for better white text readability */
+    z-index: 1;
+}
+
+/* Styles for the main page content layout */
+.main-page-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 1000px; /* Limit overall width for better layout */
+    z-index: 2; /* Ensure it's above the overlay */
+}
+
+.main-question-text {
+    color: var(--light-text); /* White color */
+    font-size: 1.8em; /* Adjust size as needed */
+    font-weight: 700;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.5); /* Optional: add shadow for readability */
+    margin-bottom: 40px; /* Space between question and cards */
+    text-align: center; /* Ensure it's centered */
+}
+
+.cards-and-descriptions-wrapper {
+    display: flex;
+    justify-content: center;
+    gap: 40px; /* Space between the two card-description groups */
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+    width: 100%;
+}
+
+.card-with-description {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center card and text horizontally */
+    text-align: center; /* Center text within its own block */
+    max-width: 450px; /* Max width for each card group */
+}
+
+.card {
+    background-color: var(--header-bg); /* White background for the card itself */
+    border-radius: 15px;
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
+    width: 100%; /* Take full width of its parent (.card-with-description) */
+    padding-bottom: 20px; /* Padding inside the card for button */
+    margin-bottom: 20px; /* Space between card and description text */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.card-image {
+    width: 100%;
+    height: 280px;
+    object-fit: cover;
+    display: block;
+    border-bottom: 5px solid var(--primary-blue);
+}
+
+.button {
+    background-color: var(--primary-blue);
+    color: var(--light-text);
+    border: none;
+    padding: 15px 30px;
+    border-radius: 30px;
+    font-size: 1.2em;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 20px; /* Space between image and button */
+}
+
+.card-description-text {
+    color: var(--light-text); /* White color for description text */
+    font-size: 0.95em; /* Adjust size as needed */
+    line-height: 1.4;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.5); /* Optional: add shadow for readability */
+    max-width: 80%; /* Limit width for better readability */
+}
+
+
+/* Styles for login pages */
+.login-container {
+    background-color: var(--header-bg);
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: var(--card-shadow);
+    width: 100%;
+    max-width: 500px;
+    text-align: center;
+    z-index: 2;
+}
+
+.login-container h2 {
+    color: var(--dark-text);
+    margin-bottom: 25px;
+    font-size: 2em;
+    font-weight: 700;
+}
+
+.form-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #555;
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="password"],
+.form-group input[type="tel"],
+.form-group select {
+    width: calc(100% - 20px); /* Adjust for padding */
+    padding: 12px 10px;
+    border: 1px solid var(--input-border);
+    border-radius: 8px;
+    font-size: 1em;
+    box-sizing: border-box; /* Include padding in width */
+    transition: border-color 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--input-focus-border);
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.2);
+}
+
+.form-group textarea {
+    width: calc(100% - 20px);
+    padding: 12px 10px;
+    border: 1px solid var(--input-border);
+    border-radius: 8px;
+    font-size: 1em;
+    box-sizing: border-box;
+    min-height: 80px;
+    resize: vertical;
+    transition: border-color 0.3s ease;
+}
+
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--input-focus-border);
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.2);
+}
+
+
+.login-button {
+    background-color: var(--primary-blue);
+    color: var(--light-text);
+    border: none;
+    padding: 12px 25px;
+    border-radius: 25px;
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    margin-top: 15px;
+}
+
+.login-button:hover {
+    background-color: #0056b3;
+}
+
+.back-button {
+    background-color: #6c757d; /* Grey color for back button */
+    color: var(--light-text);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 10px;
+    width: 100%;
+}
+
+.back-button:hover {
+    background-color: #5a6268;
+}
+
+/* Hide other input for dropdown */
+#otherPurposeInput {
+    display: none;
+    margin-top: 10px;
+}
+
+/* Styles for School Dashboard */
+.school-dashboard-container {
+    display: flex;
+    flex-direction: column; /* Stack content area and buttons vertically */
+    width: 100%;
+    max-width: 1200px; /* Adjust max width for dashboard */
+    height: 80vh; /* ให้มีความสูงเพื่อให้เห็น scroll ได้ถ้าข้อมูลเยอะ */
+    background-color: transparent; /* พื้นหลังโปร่งใสเพราะมี overlay อยู่แล้ว */
+    z-index: 2; /* ให้อยู่เหนือ background overlay */
+    padding: 20px;
+    box-sizing: border-box; /* Include padding in width/height */
+}
+
+.dashboard-content-area {
+    display: flex;
+    flex-grow: 1; /* Allow content area to take available space */
+    background-color: var(--header-bg); /* White background for the main content area */
+    border-radius: 15px;
+    box-shadow: var(--card-shadow);
+    overflow: hidden; /* Hide scrollbars if content overflows */
+    margin-bottom: 20px; /* Space between content and buttons */
+}
+
+.sidebar {
+    width: 250px; /* Fixed width for sidebar */
+    background-color: var(--sidebar-bg); /* Dark background */
+    color: var(--light-text);
+    padding: 20px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-top-left-radius: 15px;
+    border-bottom-left-radius: 15px;
+}
+
+.main-display-area {
+    flex-grow: 1; /* Take remaining space */
+    padding: 20px;
+    overflow-y: auto; /* Enable vertical scrolling if content overflows */
+}
+
+.data-block-wrapper {
+    display: flex; /* Changed from grid to flex */
+    flex-direction: column; /* Stack items vertically */
+    gap: 20px; /* Space between data blocks */
+}
+
+.data-block {
+    background-color: var(--data-block-bg); /* Light blue background */
+    border-radius: 10px;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    width: 100%; /* Ensure it takes full width in the column layout */
+    position: relative; /* For positioning details/delete button */
+}
+
+.data-item-image {
+    width: 100px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 5px;
+}
+
+.data-item-details {
+    flex-grow: 1; /* Allow details to take up space */
+}
+
+.data-item-details p {
+    margin: 3px 0;
+    font-size: 0.9em;
+    color: var(--dark-text);
+}
+
+.data-item-details strong {
+    font-weight: 600;
+}
+
+/* Details button in data block */
+.details-button {
+    background-color: var(--primary-blue);
+    color: var(--light-text);
+    border: none;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    white-space: nowrap; /* Prevent text wrapping */
+}
+
+.details-button:hover {
+    background-color: #0056b3;
+}
+
+/* Delete button in data block */
+.delete-button {
+    background-color: #dc3545; /* Red color for delete */
+    color: var(--light-text);
+    border: none;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    white-space: nowrap;
+    margin-left: 10px; /* Space from details */
+}
+
+.delete-button:hover {
+    background-color: #c82333;
+}
+
+/* Receive Waste Button */
+.receive-waste-button {
+    background-color: #00bcd4; /* Cyan/light blue for receive */
+    color: var(--light-text);
+    border: none;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    white-space: nowrap;
+    margin-right: 10px; /* Space from details */
+}
+
+.receive-waste-button:hover {
+    background-color: #0097a7;
+}
+
+
+.dashboard-buttons {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    gap: 20px;
+}
+
+.add-data-button {
+    background-color: var(--primary-blue);
+    color: var(--light-text);
+    border: none;
+    padding: 12px 25px;
+    border-radius: 25px;
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    flex-grow: 1; /* Allow buttons to take available space */
+    max-width: 300px; /* Limit button width */
+}
+
+.add-data-button:hover {
+    background-color: #0056b3;
+}
+
+/* Analysis button */
+.analysis-button {
+    background-color: #28a745; /* Green color */
+    color: var(--light-text);
+    border: none;
+    padding: 12px 25px;
+    border-radius: 25px;
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    flex-grow: 1;
+    max-width: 300px;
+}
+
+.analysis-button:hover {
+    background-color: #218838;
+}
+
+/* Edit Profile button */
+.edit-profile-button {
+    background-color: #ffc107; /* Yellow color */
+    color: var(--dark-text); /* Dark text for yellow background */
+    border: none;
+    padding: 12px 25px;
+    border-radius: 25px;
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    flex-grow: 1;
+    max-width: 300px;
+}
+
+.edit-profile-button:hover {
+    background-color: #e0a800;
+}
+
+/* Knowledge Button */
+.knowledge-button {
+    background-color: #17a2b8; /* Teal color */
+    color: var(--light-text);
+    border: none;
+    padding: 12px 25px;
+    border-radius: 25px;
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    flex-grow: 1;
+    max-width: 300px;
+}
+
+.knowledge-button:hover {
+    background-color: #138496;
+}
+
+
+/* Back button on dashboard needs to be styled like other buttons */
+.dashboard-buttons .back-button {
+    background-color: #6c757d; /* Grey color for back button */
+    color: var(--light-text);
+    border: none;
+    padding: 12px 25px; /* Match add data button padding */
+    border-radius: 25px;
+    font-size: 1.1em; /* Match add data button font size */
+    font-weight: 600; /* Match add data button font weight */
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    flex-grow: 1;
+    max-width: 300px;
+}
+
+.back-button:hover {
+    background-color: #5a6268;
+}
+
+/* Styles for Add Waste Data Page */
+.add-waste-container {
+    background-color: transparent;
+    width: 100%;
+    max-width: 900px;
+    z-index: 2;
+    padding: 20px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.add-waste-container h2 {
+    color: var(--light-text);
+    margin-bottom: 30px;
+    font-size: 2.2em;
+    font-weight: 700;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+    text-align: center;
+}
+
+.add-waste-container form {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.form-row {
+    display: flex;
+    width: 100%;
+    gap: 30px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.upload-group {
+    background-color: var(--upload-box-bg);
+    border-radius: 15px;
+    width: 300px;
+    height: 250px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.upload-button-label {
+    color: var(--light-text);
+    font-size: 1.2em;
+    font-weight: 600;
+    text-align: center;
+    padding: 10px;
+    z-index: 1;
+}
+
+.hidden-input {
+    display: none;
+}
+
+#imagePreview {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 15px;
+    z-index: 0;
+}
+
+.form-fields-group {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 400px;
+}
+
+.add-waste-container .form-group label {
+    color: var(--light-text);
+    font-size: 1.1em;
+}
+
+.add-waste-container input[type="text"],
+.add-waste-container input[type="number"],
+.add-waste-container input[type="date"] {
+    background-color: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    color: var(--dark-text);
+}
+
+.add-waste-container input::placeholder {
+    color: #666;
+}
+
+.form-buttons {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 600px;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.add-waste-container .back-button,
+.add-waste-container .login-button {
+    flex-grow: 1;
+    max-width: 250px;
+}
+
+
+/* Styles for Farmer Dashboard */
+.farmer-dashboard-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 1200px;
+    height: 80vh;
+    background-color: transparent;
+    z-index: 2;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.farmer-dashboard-container .dashboard-content-area {
+    /* ใช้สไตล์ร่วมกับ .dashboard-content-area ทั่วไป */
+}
+
+.farmer-dashboard-container .sidebar {
+    /* ใช้สไตล์ร่วมกับ .sidebar ทั่วไป */
+}
+
+.sidebar h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 1.5em;
+    font-weight: 700;
+}
+
+/* User Stars display */
+.user-stars {
+    color: #00FF00; /* Green color for stars */
+    font-size: 1.2em;
+    font-weight: 700;
+    margin-bottom: 20px;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+
+.filter-group {
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+.filter-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 0.95em;
+    font-weight: 600;
+    color: var(--light-text);
+}
+
+.filter-group input[type="text"],
+.filter-group input[type="number"],
+.filter-group input[type="date"] {
+    width: calc(100% - 20px);
+    padding: 8px 10px;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 5px;
+    background-color: rgba(255, 255, 255, 0.8);
+    color: var(--dark-text);
+    font-size: 0.9em;
+    box-sizing: border-box;
+}
+
+.filter-weight-inputs {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+
+.filter-weight-inputs input {
+    flex-grow: 1;
+    width: auto;
+}
+
+.filter-weight-inputs span {
+    color: var(--light-text);
+}
+
+.filter-button {
+    background-color: var(--primary-blue);
+    color: var(--light-text);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 15px;
+    width: 100%;
+}
+
+.filter-button:hover {
+    background-color: #0056b3;
+}
+
+/* Styles for Post Details Page */
+.post-details-container {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 800px;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.post-details-container h2 {
+    color: var(--light-text);
+    margin-bottom: 30px;
+    font-size: 2.2em;
+    font-weight: 700;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+    text-align: center;
+}
+
+.details-content {
+    display: flex;
+    width: 100%;
+    gap: 30px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.details-image {
+    width: 300px;
+    height: 250px;
+    object-fit: cover;
+    border-radius: 15px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    flex-shrink: 0;
+}
+
+.details-fields-group {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 400px;
+}
+
+.details-fields-group p {
+    color: var(--light-text);
+    font-size: 1.1em;
+    margin: 0;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+}
+
+.details-fields-group strong {
+    font-weight: 700;
+    color: var(--light-text);
+}
+
+/* Custom Confirmation Modal Styles */
+.custom-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* Ensure it's on top */
+}
+
+.custom-modal-content {
+    background-color: var(--header-bg);
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+    color: var(--dark-text);
+}
+
+.custom-modal-content p {
+    margin-bottom: 25px;
+    font-size: 1.1em;
+    font-weight: 500;
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.modal-button {
+    padding: 10px 25px;
+    border: none;
+    border-radius: 20px;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.modal-button-yes {
+    background-color: #dc3545; /* Red for Yes */
+    color: var(--light-text);
+}
+
+.modal-button-yes:hover {
+    background-color: #c82333;
+}
+
+.modal-button-no {
+    background-color: #6c757d; /* Grey for No */
+    color: var(--light-text);
+}
+
+.modal-button-no:hover {
+    background-color: #5a6268;
+}
+
+/* Analysis Page Styles */
+.analysis-container {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 900px; /* Adjust max width for analysis page */
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.analysis-container h2 {
+    color: var(--light-text);
+    margin-bottom: 30px;
+    font-size: 2.2em;
+    font-weight: 700;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+    text-align: center;
+}
+
+.chart-container {
+    background-color: var(--header-bg); /* White background for chart area */
+    border-radius: 10px;
+    padding: 20px;
+    width: 100%;
+    height: 400px; /* Fixed height for chart */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    display: flex; /* Use flex to center content if no chart */
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+
+/* Edit Profile Page Styles */
+.edit-profile-container {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 600px;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.edit-profile-container h2 {
+    color: var(--light-text);
+    margin-bottom: 30px;
+    font-size: 2.2em;
+    font-weight: 700;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+    text-align: center;
+}
+
+.edit-profile-container form {
+    width: 100%;
+}
+
+.edit-profile-container .form-group label {
+    color: var(--light-text);
+}
+
+.edit-profile-container input[type="text"],
+.edit-profile-container input[type="tel"],
+.edit-profile-container input[type="email"],
+.edit-profile-container input[type="password"],
+.edit-profile-container select,
+.edit-profile-container textarea {
+    background-color: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    color: var(--dark-text);
+}
+
+/* Knowledge Page Styles */
+.knowledge-container {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 900px;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.knowledge-container h2 {
+    color: var(--light-text);
+    margin-bottom: 20px;
+    font-size: 2.2em;
+    font-weight: 700;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+    text-align: center;
+}
+
+.knowledge-content {
+    background-color: var(--header-bg);
+    border-radius: 10px;
+    padding: 25px;
+    width: 100%;
+    max-height: 50vh; /* Limit height and allow scrolling */
+    overflow-y: auto;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    color: var(--dark-text);
+    text-align: left;
+    line-height: 1.6;
+}
+
+.knowledge-content h3 {
+    font-size: 1.5em;
+    margin-top: 15px;
+    margin-bottom: 10px;
+    color: var(--primary-blue);
+}
+
+.knowledge-content ul, .knowledge-content ol {
+    margin-left: 20px;
+    margin-bottom: 15px;
+}
+
+.knowledge-content li {
+    margin-bottom: 5px;
+}
+
+.knowledge-content a {
+    color: var(--primary-blue);
+    text-decoration: none;
+}
+
+.knowledge-content a:hover {
+    text-decoration: underline;
+}
+
+
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .main-question-text {
+        font-size: 1.5em;
+        margin-bottom: 30px;
+    }
+    .cards-and-descriptions-wrapper {
+        flex-direction: column; /* Stack cards vertically on smaller screens */
+        gap: 30px;
+    }
+    .card-with-description {
+        max-width: 90%; /* Make cards wider on smaller screens */
+    }
+    .card-image {
+        height: 250px;
+    }
+    .button {
+        font-size: 1.1em;
+        padding: 12px 25px;
+    }
+    .card-description-text {
+        font-size: 0.85em;
+    }
+
+    /* School Dashboard Responsive */
+    .school-dashboard-container {
+        padding: 10px;
+        height: auto;
+    }
+    .dashboard-content-area {
+        flex-direction: column;
+        height: auto;
+    }
+    .sidebar {
+        width: 100%;
+        border-radius: 15px 15px 0 0;
+        padding: 15px;
+    }
+    .main-display-area {
+        padding: 15px;
+    }
+    .dashboard-buttons {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .add-data-button,
+    .dashboard-buttons .back-button,
+    .analysis-button,
+    .edit-profile-button,
+    .knowledge-button {
+        max-width: 100%;
+    }
+
+    /* Add Waste Data Page Responsive */
+    .add-waste-container {
+        padding: 10px;
+    }
+    .add-waste-container h2 {
+        font-size: 1.8em;
+    }
+    .form-row {
+        flex-direction: column;
+        gap: 20px;
+        align-items: center;
+    }
+    .upload-group {
+        width: 100%;
+        max-width: 300px;
+        height: 200px;
+    }
+    .form-fields-group {
+        width: 100%;
+        max-width: none;
+    }
+    .form-buttons {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .add-waste-container .back-button,
+    .add-waste-container .login-button {
+        max-width: 100%;
+    }
+
+    /* Farmer Dashboard Responsive */
+    .farmer-dashboard-container {
+        padding: 10px;
+        height: auto;
+    }
+    .farmer-dashboard-container .dashboard-content-area {
+        flex-direction: column;
+        height: auto;
+    }
+    .farmer-dashboard-container .sidebar {
+        width: 100%;
+        border-radius: 15px 15px 0 0;
+        padding: 15px;
+    }
+    .farmer-dashboard-container .main-display-area {
+        padding: 15px;
+    }
+    .filter-group input {
+        width: calc(100% - 20px);
+    }
+    .filter-weight-inputs input {
+        width: auto;
+    }
+    .filter-button {
+        width: 100%;
+    }
+
+    /* Post Details Page Responsive */
+    .post-details-container {
+        padding: 20px;
+    }
+    .post-details-container h2 {
+        font-size: 1.8em;
+    }
+    .details-content {
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+    }
+    .details-image {
+        width: 100%;
+        max-width: 300px;
+        height: auto;
+    }
+    .details-fields-group {
+        width: 100%;
+        max-width: none;
+        text-align: center;
+    }
+    .details-fields-group p {
+        font-size: 1em;
+    }
+
+    /* Modal Responsive */
+    .custom-modal-content {
+        padding: 20px;
+    }
+    .modal-buttons {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .modal-button {
+        width: 100%;
+    }
+
+    /* Analysis Page Responsive */
+    .analysis-container {
+        padding: 15px;
+    }
+    .analysis-container h2 {
+        font-size: 1.8em;
+    }
+    .chart-container {
+        height: 300px;
+    }
+
+    /* Edit Profile Page Responsive */
+    .edit-profile-container {
+        padding: 15px;
+    }
+    .edit-profile-container h2 {
+        font-size: 1.8em;
+    }
+
+    /* Knowledge Page Responsive */
+    .knowledge-container {
+        padding: 15px;
+    }
+    .knowledge-container h2 {
+        font-size: 1.8em;
+    }
+    .knowledge-content {
+        padding: 15px;
+    }
+    .knowledge-content h3 {
+        font-size: 1.3em;
+    }
+    .knowledge-content p, .knowledge-content li {
+        font-size: 0.9em;
+    }
+}
+
+@media (max-width: 480px) {
+    .main-question-text {
+        font-size: 1.2em;
+        margin-bottom: 20px;
+    }
+    .card-image {
+        height: 200px;
+    }
+    .button {
+        font-size: 1em;
+        padding: 10px 20px;
+    }
+    .card-description-text {
+        font-size: 0.8em;
+    }
+
+    /* School Dashboard Responsive */
+    /* Farmer Dashboard Responsive */
+    .farmer-dashboard-container .sidebar h3 {
+        font-size: 1.3em;
+    }
+    .data-block {
+        flex-direction: column;
+        text-align: center;
+    }
+    .data-item-image {
+        margin-bottom: 10px;
+    }
+
+    /* Add Waste Data Page Responsive */
+    .add-waste-container h2 {
+        font-size: 1.5em;
+    }
+    .upload-button-label {
+        font-size: 1em;
+    }
+
+    /* Post Details Page Responsive */
+    .post-details-container h2 {
+        font-size: 1.5em;
+    }
+    .details-fields-group p {
+        font-size: 0.9em;
+    }
+
+    /* Analysis Page Responsive */
+    .analysis-container h2 {
+        font-size: 1.5em;
+    }
+    .chart-container {
+        height: 250px;
+    }
+
+    /* Edit Profile Page Responsive */
+    .edit-profile-container h2 {
+        font-size: 1.5em;
+    }
+
+    /* Knowledge Page Responsive */
+    .knowledge-container h2 {
+        font-size: 1.5em;
+    }
+}
