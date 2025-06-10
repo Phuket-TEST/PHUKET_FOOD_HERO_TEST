@@ -10,7 +10,6 @@ const firebaseConfig = {
   measurementId: "G-56SEESNQWF"
 };
 
-
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
@@ -49,6 +48,7 @@ async function handleAuthSubmission(email, password, role, additionalData = {}) 
             console.log('User already registered, attempting login...');
             try {
                 // If email already in use, try to sign in
+                // TODO: Update to your Render.com Backend URL
                 currentUser = await auth.signInWithEmailAndPassword(email, password); // Firebase handles sign in
                 alert('เข้าสู่ระบบสำเร็จ!');
             } catch (loginError) {
@@ -140,12 +140,10 @@ async function renderDataBlocks(data, targetWrapperId) {
     // Fetch user's stars for display
     let userStars = 0;
     try {
-        // Fetch current user's data from Firestore to get updated stars
-        const userDoc = await db.collection('users').doc(userId).get();
-        if(userDoc.exists) {
-            userStars = userDoc.data().stars || 0;
-            localStorage.setItem('userStars', userStars); // Update local storage
-        }
+        // TODO: Update to your Render.com Backend URL and create this API in Backend (routes/auth.js)
+        const profileResponse = await db.collection('users').doc(userId).get();
+        const profileData = profileResponse.data();
+        userStars = profileData.stars || 0;
     } catch (error) {
         console.error('Failed to fetch user stars:', error);
     }
@@ -728,7 +726,6 @@ function loadContent(contentHtml) {
         });
     }
 }
-
 
 // --- Page HTML Content Functions ---
 function getMainPageHtml() {
