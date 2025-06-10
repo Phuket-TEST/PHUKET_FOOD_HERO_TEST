@@ -32,6 +32,8 @@ body {
     padding: 10px 20px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     text-align: center;
+    position: relative; /* Ensure z-index works for header content */
+    z-index: 100; /* Header should be above almost everything else */
 }
 
 .top-bar {
@@ -54,6 +56,8 @@ body {
     text-decoration: none;
     color: var(--dark-text);
     font-weight: bold;
+    position: relative; /* Ensure z-index works */
+    z-index: 101; /* Sign-in button above header content */
 }
 
 .hero-section {
@@ -77,23 +81,24 @@ body {
     align-items: center; /* Center content horizontally */
     padding: 40px 20px; /* Adjust padding as needed */
     /* TODO: Replace with your actual background image path */
-    background-image: url('images/phukettrash.jpg');
+    background-image: url('images/background_waste.jpg');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
     position: relative;
+    z-index: 0; /* Base z-index for content-section */
 }
 
-/* Add overlay to make text and buttons stand out */
-.content-section::before {
-    content: '';
+/* Background Overlay (now a div in HTML, not a pseudo-element) */
+.background-overlay {
+    /* content: ''; Removed this line, it's a div now. */
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
     background-color: rgba(0, 0, 0, 0.6); /* Increased opacity for better white text readability */
-    z-index: 1;
+    z-index: 1; /* Overlay is above background-image but below loaded HTML */
 }
 
 /* Styles for the main page content layout */
@@ -103,7 +108,8 @@ body {
     align-items: center;
     width: 100%;
     max-width: 1000px; /* Limit overall width for better layout */
-    z-index: 2; /* Ensure it's above the overlay */
+    position: relative;
+    z-index: 2; /* Main page content above the overlay */
 }
 
 .main-question-text {
@@ -136,7 +142,8 @@ body {
     border-radius: 15px;
     box-shadow: var(--card-shadow);
     overflow: hidden;
-    width: 100%; /* Take full width of its parent (.card-with-description) */
+    width: 100%;
+    height: 100%; /* Make card take full height of its parent */
     padding-bottom: 20px; /* Padding inside the card for button */
     margin-bottom: 20px; /* Space between card and description text */
     display: flex;
@@ -165,6 +172,10 @@ body {
     margin-top: 20px; /* Space between image and button */
 }
 
+.button:hover {
+    background-color: #0056b3;
+}
+
 .card-description-text {
     color: var(--light-text); /* White color for description text */
     font-size: 0.95em; /* Adjust size as needed */
@@ -183,7 +194,8 @@ body {
     width: 100%;
     max-width: 500px;
     text-align: center;
-    z-index: 2;
+    position: relative; /* Ensure z-index works */
+    z-index: 2; /* Login form above overlay */
 }
 
 .login-container h2 {
@@ -217,6 +229,8 @@ body {
     font-size: 1em;
     box-sizing: border-box; /* Include padding in width */
     transition: border-color 0.3s ease;
+    background-color: rgba(255, 255, 255, 0.8); /* Slightly transparent white input background */
+    color: var(--dark-text);
 }
 
 .form-group input:focus,
@@ -236,6 +250,8 @@ body {
     min-height: 80px;
     resize: vertical;
     transition: border-color 0.3s ease;
+    background-color: rgba(255, 255, 255, 0.8);
+    color: var(--dark-text);
 }
 
 .form-group textarea:focus {
@@ -257,6 +273,8 @@ body {
     transition: background-color 0.3s ease;
     width: 100%;
     margin-top: 15px;
+    position: relative; /* Ensure it's clickable */
+    z-index: 5;
 }
 
 .login-button:hover {
@@ -274,6 +292,8 @@ body {
     transition: background-color 0.3s ease;
     margin-top: 10px;
     width: 100%;
+    position: relative; /* Ensure it's clickable */
+    z-index: 5;
 }
 
 .back-button:hover {
@@ -286,27 +306,17 @@ body {
     margin-top: 10px;
 }
 
-/* Styles for School Dashboard */
-.school-dashboard-container {
-    display: flex;
-    flex-direction: column; /* Stack content area and buttons vertically */
-    width: 100%;
-    max-width: 1200px; /* Adjust max width for dashboard */
-    height: 80vh; /* ให้มีความสูงเพื่อให้เห็น scroll ได้ถ้าข้อมูลเยอะ */
-    background-color: transparent; /* พื้นหลังโปร่งใสเพราะมี overlay อยู่แล้ว */
-    z-index: 2; /* ให้อยู่เหนือ background overlay */
-    padding: 20px;
-    box-sizing: border-box; /* Include padding in width/height */
-}
-
+/* Dashboard specific content area and sidebar */
 .dashboard-content-area {
     display: flex;
-    flex-grow: 1; /* Allow content area to take available space */
-    background-color: var(--header-bg); /* White background for the main content area */
+    flex-grow: 1;
+    background-color: var(--header-bg);
     border-radius: 15px;
     box-shadow: var(--card-shadow);
-    overflow: hidden; /* Hide scrollbars if content overflows */
-    margin-bottom: 20px; /* Space between content and buttons */
+    overflow: hidden;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 3; /* Content area above main containers background */
 }
 
 .sidebar {
@@ -320,30 +330,37 @@ body {
     align-items: center;
     border-top-left-radius: 15px;
     border-bottom-left-radius: 15px;
+    position: relative;
+    z-index: 4; /* Sidebar above main content area */
 }
 
 .main-display-area {
     flex-grow: 1; /* Take remaining space */
     padding: 20px;
-    overflow-y: auto; /* Enable vertical scrolling if content overflows */
+    overflow-y: auto;
+    position: relative;
+    z-index: 3; /* Main display area above lower z-index elements */
 }
 
+/* Data block wrapper */
 .data-block-wrapper {
-    display: flex; /* Changed from grid to flex */
-    flex-direction: column; /* Stack items vertically */
-    gap: 20px; /* Space between data blocks */
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
 
+/* Individual data block */
 .data-block {
-    background-color: var(--data-block-bg); /* Light blue background */
+    background-color: var(--data-block-bg);
     border-radius: 10px;
     padding: 15px;
     display: flex;
     align-items: center;
     gap: 15px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    width: 100%; /* Ensure it takes full width in the column layout */
-    position: relative; /* For positioning details/delete button */
+    width: 100%;
+    position: relative;
+    z-index: 5; /* Ensure data blocks are on top within main-display-area */
 }
 
 .data-item-image {
@@ -354,7 +371,7 @@ body {
 }
 
 .data-item-details {
-    flex-grow: 1; /* Allow details to take up space */
+    flex-grow: 1;
 }
 
 .data-item-details p {
@@ -367,8 +384,12 @@ body {
     font-weight: 600;
 }
 
-/* Details button in data block */
-.details-button {
+/* Buttons inside data blocks */
+.details-button,
+.delete-button,
+.receive-waste-button,
+.scan-qr-button,
+.show-qr-button {
     background-color: var(--primary-blue);
     color: var(--light-text);
     border: none;
@@ -377,58 +398,51 @@ body {
     font-size: 0.85em;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    white-space: nowrap; /* Prevent text wrapping */
-}
-
-.details-button:hover {
-    background-color: #0056b3;
-}
-
-/* Delete button in data block */
-.delete-button {
-    background-color: #dc3545; /* Red color for delete */
-    color: var(--light-text);
-    border: none;
-    padding: 8px 15px;
-    border-radius: 20px;
-    font-size: 0.85em;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
     white-space: nowrap;
-    margin-left: 10px; /* Space from details */
+    position: relative; /* Crucial for clickability */
+    z-index: 6; /* Ensure these buttons are above other elements in data block */
 }
 
-.delete-button:hover {
-    background-color: #c82333;
-}
+.details-button:hover { background-color: #0056b3; }
+.delete-button { background-color: #dc3545; margin-left: 10px; }
+.delete-button:hover { background-color: #c82333; }
+.receive-waste-button { background-color: #00bcd4; margin-right: 10px; }
+.receive-waste-button:hover { background-color: #0097a7; }
+.scan-qr-button { background-color: #fd7e14; margin-left: 10px; }
+.scan-qr-button:hover { background-color: #e66a00; }
+.show-qr-button { background-color: #6f42c1; margin-left: 10px; }
+.show-qr-button:hover { background-color: #5d35a6; }
 
-/* Receive Waste Button */
-.receive-waste-button {
-    background-color: #00bcd4; /* Cyan/light blue for receive */
-    color: var(--light-text);
-    border: none;
-    padding: 8px 15px;
-    border-radius: 20px;
-    font-size: 0.85em;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+/* Received Status Text */
+.received-status {
+    font-size: 0.9em;
+    font-weight: 600;
+    color: #28a745; /* Green */
     white-space: nowrap;
-    margin-right: 10px; /* Space from details */
+    margin-right: 10px;
+    position: relative; /* Ensure it's visible */
+    z-index: 6;
 }
 
-.receive-waste-button:hover {
-    background-color: #0097a7;
-}
 
-
+/* Dashboard global buttons */
 .dashboard-buttons {
     display: flex;
     justify-content: space-between;
     width: 100%;
     gap: 20px;
+    position: relative;
+    z-index: 10; /* Bring buttons to front */
 }
 
-.add-data-button {
+.dashboard-buttons .button,
+.dashboard-buttons .back-button,
+.add-data-button,
+.analysis-button,
+.edit-profile-button,
+.knowledge-button,
+.pending-delivery-button,
+.received-waste-button-list {
     background-color: var(--primary-blue);
     color: var(--light-text);
     border: none;
@@ -438,99 +452,37 @@ body {
     font-weight: 600;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    flex-grow: 1; /* Allow buttons to take available space */
-    max-width: 300px; /* Limit button width */
-}
-
-.add-data-button:hover {
-    background-color: #0056b3;
-}
-
-/* Analysis button */
-.analysis-button {
-    background-color: #28a745; /* Green color */
-    color: var(--light-text);
-    border: none;
-    padding: 12px 25px;
-    border-radius: 25px;
-    font-size: 1.1em;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
     flex-grow: 1;
     max-width: 300px;
+    position: relative; /* Ensure they are clickable */
+    z-index: 11; /* Above other dashboard elements */
 }
 
-.analysis-button:hover {
-    background-color: #218838;
-}
+.add-data-button:hover { background-color: #0056b3; }
+.analysis-button { background-color: #28a745; }
+.analysis-button:hover { background-color: #218838; }
+.edit-profile-button { background-color: #ffc107; color: var(--dark-text); }
+.edit-profile-button:hover { background-color: #e0a800; }
+.knowledge-button { background-color: #17a2b8; }
+.knowledge-button:hover { background-color: #138496; }
+.pending-delivery-button { background-color: #fd7e14; }
+.pending-delivery-button:hover { background-color: #e66a00; }
+.received-waste-button-list { background-color: #6f42c1; }
+.received-waste-button-list:hover { background-color: #5d35a6; }
+.dashboard-buttons .back-button { background-color: #6c757d; }
+.dashboard-buttons .back-button:hover { background-color: #5a6268; }
 
-/* Edit Profile button */
-.edit-profile-button {
-    background-color: #ffc107; /* Yellow color */
-    color: var(--dark-text); /* Dark text for yellow background */
-    border: none;
-    padding: 12px 25px;
-    border-radius: 25px;
-    font-size: 1.1em;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    flex-grow: 1;
-    max-width: 300px;
-}
-
-.edit-profile-button:hover {
-    background-color: #e0a800;
-}
-
-/* Knowledge Button */
-.knowledge-button {
-    background-color: #17a2b8; /* Teal color */
-    color: var(--light-text);
-    border: none;
-    padding: 12px 25px;
-    border-radius: 25px;
-    font-size: 1.1em;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    flex-grow: 1;
-    max-width: 300px;
-}
-
-.knowledge-button:hover {
-    background-color: #138496;
-}
-
-
-/* Back button on dashboard needs to be styled like other buttons */
-.dashboard-buttons .back-button {
-    background-color: #6c757d; /* Grey color for back button */
-    color: var(--light-text);
-    border: none;
-    padding: 12px 25px; /* Match add data button padding */
-    border-radius: 25px;
-    font-size: 1.1em; /* Match add data button font size */
-    font-weight: 600; /* Match add data button font weight */
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    flex-grow: 1;
-    max-width: 300px;
-}
-
-.back-button:hover {
-    background-color: #5a6268;
-}
 
 /* Styles for Add Waste Data Page */
 .add-waste-container {
-    background-color: transparent;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     width: 100%;
     max-width: 900px;
-    z-index: 2;
-    padding: 20px;
-    box-sizing: border-box;
+    position: relative; /* Ensure z-index works */
+    z-index: 2; /* Container above overlay */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -546,11 +498,8 @@ body {
 }
 
 .add-waste-container form {
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 15px;
-    padding: 30px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     width: 100%;
+    background-color: transparent; /* Form background transparent */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -621,7 +570,10 @@ body {
 .add-waste-container input[type="number"],
 .add-waste-container input[type="date"] {
     background-color: rgba(255, 255, 255, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.5);
+    border: 1px solid var(--input-border);
+    border-radius: 8px;
+    font-size: 1em;
+    box-sizing: border-box;
     color: var(--dark-text);
 }
 
@@ -645,118 +597,26 @@ body {
 }
 
 
-/* Styles for Farmer Dashboard */
-.farmer-dashboard-container {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    max-width: 1200px;
-    height: 80vh;
-    background-color: transparent;
-    z-index: 2;
-    padding: 20px;
-    box-sizing: border-box;
-}
-
-.farmer-dashboard-container .dashboard-content-area {
-    /* ใช้สไตล์ร่วมกับ .dashboard-content-area ทั่วไป */
-}
-
-.farmer-dashboard-container .sidebar {
-    /* ใช้สไตล์ร่วมกับ .sidebar ทั่วไป */
-}
-
-.sidebar h3 {
-    margin-top: 0;
-    margin-bottom: 20px;
-    font-size: 1.5em;
-    font-weight: 700;
-}
-
-/* User Stars display */
-.user-stars {
-    color: #00FF00; /* Green color for stars */
-    font-size: 1.2em;
-    font-weight: 700;
-    margin-bottom: 20px;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-}
-
-
-.filter-group {
-    width: 100%;
-    margin-bottom: 15px;
-}
-
-.filter-group label {
-    display: block;
-    margin-bottom: 5px;
-    font-size: 0.95em;
-    font-weight: 600;
-    color: var(--light-text);
-}
-
-.filter-group input[type="text"],
-.filter-group input[type="number"],
-.filter-group input[type="date"] {
-    width: calc(100% - 20px);
-    padding: 8px 10px;
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    border-radius: 5px;
-    background-color: rgba(255, 255, 255, 0.8);
-    color: var(--dark-text);
-    font-size: 0.9em;
-    box-sizing: border-box;
-}
-
-.filter-weight-inputs {
-    display: flex;
-    gap: 5px;
-    align-items: center;
-}
-
-.filter-weight-inputs input {
-    flex-grow: 1;
-    width: auto;
-}
-
-.filter-weight-inputs span {
-    color: var(--light-text);
-}
-
-.filter-button {
-    background-color: var(--primary-blue);
-    color: var(--light-text);
-    border: none;
-    padding: 10px 20px;
-    border-radius: 20px;
-    font-size: 1em;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    margin-top: 15px;
-    width: 100%;
-}
-
-.filter-button:hover {
-    background-color: #0056b3;
-}
-
-/* Styles for Post Details Page */
-.post-details-container {
-    background-color: rgba(255, 255, 255, 0.1);
+/* Pending Delivery Page Styles */
+.pending-delivery-container,
+.received-waste-container,
+.qr-code-container {
+    background-color: rgba(255, 255, 255, 0.1); /* Semi-transparent background */
     border-radius: 15px;
     padding: 30px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     width: 100%;
-    max-width: 800px;
-    z-index: 2;
+    max-width: 1000px;
+    position: relative; /* Ensure z-index works */
+    z-index: 2; /* Main content above overlay */
     display: flex;
     flex-direction: column;
     align-items: center;
 }
 
-.post-details-container h2 {
+.pending-delivery-container h2,
+.received-waste-container h2,
+.qr-code-container h2 {
     color: var(--light-text);
     margin-bottom: 30px;
     font-size: 2.2em;
@@ -765,250 +625,109 @@ body {
     text-align: center;
 }
 
-.details-content {
-    display: flex;
+.pending-list-area,
+.received-list-area {
     width: 100%;
-    gap: 30px;
-    margin-bottom: 30px;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: flex-start;
-}
-
-.details-image {
-    width: 300px;
-    height: 250px;
-    object-fit: cover;
-    border-radius: 15px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-    flex-shrink: 0;
-}
-
-.details-fields-group {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    max-width: 400px;
-}
-
-.details-fields-group p {
-    color: var(--light-text);
-    font-size: 1.1em;
-    margin: 0;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
-}
-
-.details-fields-group strong {
-    font-weight: 700;
-    color: var(--light-text);
-}
-
-/* Custom Confirmation Modal Styles */
-.custom-modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000; /* Ensure it's on top */
-}
-
-.custom-modal-content {
-    background-color: var(--header-bg);
-    padding: 30px;
-    border-radius: 15px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    text-align: center;
-    max-width: 400px;
-    width: 90%;
-    color: var(--dark-text);
-}
-
-.custom-modal-content p {
-    margin-bottom: 25px;
-    font-size: 1.1em;
-    font-weight: 500;
-}
-
-.modal-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-}
-
-.modal-button {
-    padding: 10px 25px;
-    border: none;
-    border-radius: 20px;
-    font-size: 1em;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.modal-button-yes {
-    background-color: #dc3545; /* Red for Yes */
-    color: var(--light-text);
-}
-
-.modal-button-yes:hover {
-    background-color: #c82333;
-}
-
-.modal-button-no {
-    background-color: #6c757d; /* Grey for No */
-    color: var(--light-text);
-}
-
-.modal-button-no:hover {
-    background-color: #5a6268;
-}
-
-/* Analysis Page Styles */
-.analysis-container {
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 15px;
-    padding: 30px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    width: 100%;
-    max-width: 900px; /* Adjust max width for analysis page */
-    z-index: 2;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.analysis-container h2 {
-    color: var(--light-text);
-    margin-bottom: 30px;
-    font-size: 2.2em;
-    font-weight: 700;
-    text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
-    text-align: center;
-}
-
-.chart-container {
-    background-color: var(--header-bg); /* White background for chart area */
-    border-radius: 10px;
-    padding: 20px;
-    width: 100%;
-    height: 400px; /* Fixed height for chart */
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    display: flex; /* Use flex to center content if no chart */
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-
-/* Edit Profile Page Styles */
-.edit-profile-container {
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 15px;
-    padding: 30px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    width: 100%;
-    max-width: 600px;
-    z-index: 2;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.edit-profile-container h2 {
-    color: var(--light-text);
-    margin-bottom: 30px;
-    font-size: 2.2em;
-    font-weight: 700;
-    text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
-    text-align: center;
-}
-
-.edit-profile-container form {
-    width: 100%;
-}
-
-.edit-profile-container .form-group label {
-    color: var(--light-text);
-}
-
-.edit-profile-container input[type="text"],
-.edit-profile-container input[type="tel"],
-.edit-profile-container input[type="email"],
-.edit-profile-container input[type="password"],
-.edit-profile-container select,
-.edit-profile-container textarea {
-    background-color: rgba(255, 255, 255, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    color: var(--dark-text);
-}
-
-/* Knowledge Page Styles */
-.knowledge-container {
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 15px;
-    padding: 30px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    width: 100%;
-    max-width: 900px;
-    z-index: 2;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.knowledge-container h2 {
-    color: var(--light-text);
-    margin-bottom: 20px;
-    font-size: 2.2em;
-    font-weight: 700;
-    text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
-    text-align: center;
-}
-
-.knowledge-content {
-    background-color: var(--header-bg);
-    border-radius: 10px;
-    padding: 25px;
-    width: 100%;
-    max-height: 50vh; /* Limit height and allow scrolling */
+    max-height: 60vh; /* Allow scrolling for lists */
     overflow-y: auto;
+    background-color: var(--header-bg);
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 3; /* Ensure lists are above background elements */
+}
+
+/* QR Code Display Styles */
+.qr-code-container .qr-code-box {
+    background-color: var(--header-bg);
+    padding: 20px;
+    border-radius: 10px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    text-align: center;
+    width: fit-content; /* Adjust width to content */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 3;
+}
+.qr-code-container .qr-code-text {
+    font-size: 1.2em;
+    font-weight: bold;
     color: var(--dark-text);
-    text-align: left;
-    line-height: 1.6;
-}
-
-.knowledge-content h3 {
-    font-size: 1.5em;
-    margin-top: 15px;
-    margin-bottom: 10px;
-    color: var(--primary-blue);
-}
-
-.knowledge-content ul, .knowledge-content ol {
-    margin-left: 20px;
     margin-bottom: 15px;
 }
-
-.knowledge-content li {
-    margin-bottom: 5px;
+.qr-code-container img {
+    border: 1px solid #ccc;
+    padding: 5px;
+    background-color: white;
 }
 
-.knowledge-content a {
-    color: var(--primary-blue);
+/* Specific button for QR Scan (school) */
+.scan-qr-button {
+    background-color: #fd7e14; /* Orange */
+    color: var(--light-text);
+    border: none;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    white-space: nowrap;
+    margin-left: 10px;
+    position: relative;
+    z-index: 6;
+}
+
+.scan-qr-button:hover {
+    background-color: #e66a00;
+}
+
+.show-qr-button { /* for farmer */
+    background-color: #6f42c1; /* Purple */
+    color: var(--light-text);
+    border: none;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    white-space: nowrap;
+    margin-left: 10px;
+    position: relative;
+    z-index: 6;
+}
+.show-qr-button:hover {
+    background-color: #5d35a6;
+}
+
+
+/* Footer Contact Email */
+.footer {
+    background-color: var(--footer-bg);
+    color: var(--light-text);
+    text-align: center;
+    padding: 15px 0;
+    font-size: 0.85em;
+    width: 100%;
+    position: relative;
+    z-index: 50; /* Bring footer above potential overlays */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.footer .contact-email a {
+    color: var(--light-text);
     text-decoration: none;
 }
-
-.knowledge-content a:hover {
+.footer .contact-email a:hover {
     text-decoration: underline;
 }
-
 
 
 /* Responsive Design */
@@ -1060,7 +779,9 @@ body {
     .dashboard-buttons .back-button,
     .analysis-button,
     .edit-profile-button,
-    .knowledge-button {
+    .knowledge-button,
+    .pending-delivery-button,
+    .received-waste-button-list {
         max-width: 100%;
     }
 
