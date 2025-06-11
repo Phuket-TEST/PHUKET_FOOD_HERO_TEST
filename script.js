@@ -1,20 +1,36 @@
 // NEW: Firebase Configuration
 // TODO: PASTE YOUR FIREBASE CONFIG OBJECT HERE FROM FIREBASE CONSOLE
+// *** IMPORTANT: Replace all "YOUR_..." placeholders with your actual Firebase project config ***
 const firebaseConfig = {
   apiKey: "AIzaSyCjtbAuyePzeC6TbnbautvwUnxzcyxPvkw",
   authDomain: "phuket-food-hero-bdf99.firebaseapp.com",
   projectId: "phuket-food-hero-bdf99",
   storageBucket: "phuket-food-hero-bdf99.firebasestorage.app",
   messagingSenderId: "186105687007",
-  appId: "1:186105687007:web:7f4395dfea4e8ac942326a", // แก้ไข App ID
+  appId: "1:186105687007:web:7f4395dfea7e8ac942326a",
   measurementId: "G-56SEESNQWF"
 };
 
+// --- IMPORTANT FIX: Declare auth, db, storage globally ---
+let auth;
+let db;
+let storage;
+// --- END IMPORTANT FIX ---
+
 // Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
-const storage = firebase.storage();
+try {
+    const firebaseApp = firebase.initializeApp(firebaseConfig); // Assign to a variable
+    auth = firebase.auth();
+    db = firebase.firestore();
+    storage = firebase.storage();
+    console.log("Firebase initialized successfully. Auth, DB, Storage objects are accessible.");
+} catch (initError) {
+    console.error("Failed to initialize Firebase:", initError);
+    alert("เกิดข้อผิดพลาดในการเริ่มต้น Firebase: " + initError.message + ". โปรดตรวจสอบ Firebase Config และ API Key ใน script.js");
+    // Don't throw new Error here, as it stops script execution preventing any display.
+    // Let the browser show the alert and the console error.
+}
+
 
 // Helper function to calculate stars (1 star for every 10 actions)
 const calculateStars = (count) => {
@@ -53,7 +69,7 @@ async function handleAuthSubmission(email, password, role, additionalData = {}) 
         if (!currentUser || !currentUser.uid) {
             console.error("Auth Error: currentUser or UID is undefined after createUserWithEmailAndPassword.");
             alert('ลงทะเบียนไม่สำเร็จ: ผู้ใช้ไม่ได้ถูกสร้างอย่างถูกต้อง (UID หายไป)');
-            await auth.signOut();
+            // No need to signOut here as user might not be fully created/signed in yet
             loadMainPage();
             return;
         }
@@ -261,6 +277,47 @@ async function renderDataBlocks(data, targetWrapperId) {
         const schoolContact = item.schoolInfo ? item.schoolInfo.contactNumber : 'ไม่ระบุ';
         const schoolEmail = item.schoolInfo ? item.schoolInfo.email : 'ไม่ระบุ';
 
+        // Build action buttons for each block
+        let actionButtonsHtml = '';
+        if (targetWrapperId === '#schoolDataBlocks') { // School Dashboard
+            // --- IMPORTANT: Changed "scan-qr-button" back to "delete-button" on school dashboard ---
+            if (item.schoolId === userId && !item.isDelivered) {
+                actionButtonsHtml += `<button class="delete-button" data-id="${item.id}">ลบ</button>`;
+            } else if (item.schoolId === userId && item.isDelivered) {
+                // Show status if delivered
+                actionButtonsHtml += `<p class="status-delivered">ส่งมอบแล้ว</p>`; 
+            }
+            // Other school posts (not owned by current school user) will not have buttons on this dashboard.
+        } else if (targetWrapperId === '#farmerDataBlocks') { // Farmer Dashboard (available posts)
+            // ถ้ายังไม่มีเกษตรกรคนไหนรับ
+            if (!item.isReceived) {
+                actionButtonsHtml += `
+                    <button class="receive-waste-button" data-id="${item.id}">รับเศษอาหาร</button>
+                    <button class="details-button" data-id="${item.id}">รายละเอียด</button>
+                `;
+            } else if (item.isReceived) { // ถ้ารับไปแล้วโดยเกษตรกรคนใดคนหนึ่ง
+                actionButtonsHtml += `
+                    <p class="received-status">รับแล้ว</p>
+                    <button class="details-button" data-id="${item.id}">รายละเอียด</button>
+                `;
+            }
+        } else if (targetWrapperId === '#pendingDeliveryBlocks' && userRole === 'school') { // School's Pending Delivery List
+            // เฉพาะรายการที่เกษตรกรรับแล้วแต่โรงเรียนยังไม่ได้ยืนยันการส่งมอบ
+            if (item.isReceived && !item.isDelivered) {
+                actionButtonsHtml += `
+                    <button class="scan-qr-button" data-id="${item.id}">สแกน QR Code เพื่อยืนยัน</button>
+                `;
+            }
+        } else if (targetWrapperId === '#receivedWasteBlocks' && userRole === 'farmer') { // Farmer's Received Waste List
+            // ถ้าเป็นรายการที่เกษตรกรคนนี้รับไปแล้ว
+            if (item.receivedBy === userId) {
+                actionButtonsHtml += `
+                    <p>สถานะ: <span class="${item.isDelivered ? 'status-delivered' : 'status-pending'}">${item.isDelivered ? 'ส่งมอบแล้ว' : 'รอส่งมอบ'}</span></p>
+                    <button class="show-qr-button" data-id="${item.id}">แสดง QR Code</button> <!-- แทนที่ปุ่มรายละเอียดด้วยปุ่มแสดงQR code -->
+                `;
+            }
+        }
+
 
         dataBlock.innerHTML = `
             <img src="${item.imageUrl || 'https://placehold.co/150x120/ADD8E6/000000?text=No+Image'}" alt="Waste Image" class="data-item-image">
@@ -271,52 +328,60 @@ async function renderDataBlocks(data, targetWrapperId) {
                 <p><strong>จาก:</strong> ${schoolName}</p>
                 <p><strong>ติดต่อ:</strong> ${schoolContact}</p>
             </div>
-            ${userRole === 'school' && item.schoolId === userId && !item.isDelivered ? `<button class="delete-button" data-id="${item.id}">ลบ</button>` : ''}
-            ${userRole === 'farmer' && !item.isReceived ? `
-                <button class="receive-waste-button" data-id="${item.id}">รับเศษอาหาร</button>
-                <button class="details-button" data-id="${item.id}">รายละเอียด</button>
-                ` : ''}
-            ${userRole === 'farmer' && item.isReceived ? `
-                <p class="received-status">รับแล้วโดยคุณ</p>
-                <button class="details-button" data-id="${item.id}">รายละเอียด</button>
-            `: ''}
+            <div class="data-block-actions"> <!-- NEW: Wrapper for buttons -->
+                ${actionButtonsHtml}
+            </div>
         `;
         wrapper.appendChild(dataBlock);
     });
 
-    // Attach delete button listeners for school dashboard
+    // Attach event listeners after rendering all blocks
     if (userRole === 'school' && targetWrapperId === '#schoolDataBlocks') {
-        wrapper.querySelectorAll('.delete-button').forEach(button => {
+        wrapper.querySelectorAll('.delete-button').forEach(button => { // Re-attached delete listener for school dashboard
+            console.log("Attaching delete listener to school dashboard item.");
             button.addEventListener('click', (e) => {
                 const wasteId = e.target.dataset.id;
                 showConfirmationModal('คุณแน่ใจหรือไม่ที่จะลบข้อมูลนี้?', () => deleteWasteEntry(wasteId));
             });
         });
-    }
-
-    // Attach details button listeners for farmer dashboard
-    if (userRole === 'farmer' && targetWrapperId === '#farmerDataBlocks') {
+    } else if (userRole === 'farmer' && targetWrapperId === '#farmerDataBlocks') {
         wrapper.querySelectorAll('.details-button').forEach(button => {
+            console.log("Attaching farmer details listener");
             button.addEventListener('click', (e) => {
                 const postId = e.target.dataset.id;
                 loadPostDetails(postId);
             });
         });
-        // Attach receive waste button listeners for farmer dashboard
         wrapper.querySelectorAll('.receive-waste-button').forEach(button => {
+            console.log("Attaching receive listener");
             button.addEventListener('click', (e) => {
                 const wasteId = e.target.dataset.id;
                 showConfirmationModal('คุณต้องการรับเศษอาหารนี้หรือไม่?', () => handleReceiveWaste(wasteId));
             });
         });
-    }
-
-    // NEW: Attach QR Scan button listeners for school pending delivery page
-    if (userRole === 'school' && targetWrapperId === '#pendingDeliveryBlocks') {
+    } else if (userRole === 'school' && targetWrapperId === '#pendingDeliveryBlocks') {
         wrapper.querySelectorAll('.scan-qr-button').forEach(button => {
+            console.log("Attaching scan-qr listener for pending delivery"); // Specific log
             button.addEventListener('click', (e) => {
                 const wasteId = e.target.dataset.id;
-                loadQRCodeDisplayPage(wasteId); // Show QR code for this item
+                showConfirmationModal('คุณแน่ใจหรือไม่ที่จะยืนยันการส่งมอบเศษอาหารนี้?', async () => {
+                    const qrValue = prompt('กรุณากรอก Waste ID ที่แสดงบน QR Code ของเกษตรกรเพื่อยืนยันการส่งมอบ');
+                    if (qrValue && qrValue === wasteId) {
+                        await handleConfirmDelivery(wasteId);
+                    } else if (qrValue) {
+                        alert('รหัส QR Code ไม่ตรงกับรายการที่เลือก');
+                    } else {
+                        alert('การยืนยันถูกยกเลิก');
+                    }
+                });
+            });
+        });
+    } else if (userRole === 'farmer' && targetWrapperId === '#receivedWasteBlocks') {
+        wrapper.querySelectorAll('.show-qr-button').forEach(button => {
+            console.log("Attaching show-qr listener for received waste"); // Specific log
+            button.addEventListener('click', (e) => {
+                const wasteId = e.target.dataset.id;
+                loadQRCodeDisplayPage(wasteId);
             });
         });
     }
@@ -826,7 +891,7 @@ function getMainPageHtml() {
                 <div class="card-with-description">
                     <div class="card">
                         <!-- TODO: Replace with your actual school image path -->
-                        <img src="images/school_image.jpg" alt="รูปภาพโรงเรียน" class="card-image">
+                        <img src="images/school.jpg" alt="รูปภาพโรงเรียน" class="card-image">
                         <button class="button" id="schoolButton">โรงเรียน</button>
                     </div>
                     <p class="card-description-text">คลิกที่นี่เพื่อลงทะเบียนและจัดการเศษอาหารเหลือจากโรงเรียนของคุณ</p>
@@ -834,7 +899,7 @@ function getMainPageHtml() {
                 <div class="card-with-description">
                     <div class="card">
                         <!-- TODO: Replace with your actual farmer image path -->
-                        <img src="images/farmer_image.jpg" alt="รูปภาพเกษตรกร" class="card-image">
+                        <img src="images/farmer.jpg" alt="รูปภาพเกษตรกร" class="card-image">
                         <button class="button" id="farmerButton">เกษตรกร</button>
                     </div>
                     <p class="card-description-text">คลิกที่นี่เพื่อเลือกประเภทเศษอาหารที่คุณต้องการนำไปใช้ประโยชน์</p>
@@ -949,7 +1014,6 @@ function getSchoolDashboardHtml() {
             <div class="dashboard-content-area">
                 <div class="sidebar">
                     <p class="user-stars">⭐ 0 ดาว</p>
-                    <p style="color: #666; font-size:0.9em; text-align: center; padding: 10px;">(ฟังก์ชันกรองจะอยู่บนหน้าของเกษตรกร)</p>
                 </div>
                 <div class="main-display-area">
                     <div class="data-block-wrapper" id="schoolDataBlocks">
