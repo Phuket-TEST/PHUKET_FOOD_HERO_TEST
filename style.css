@@ -6,12 +6,12 @@
     --dark-text: #333;
     --light-text: #fff;
     --grey-bg: #f4f4f4;
-    --header-bg: #fff;
+    --header-bg: #ffffff;
     --footer-bg: #333;
     --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     --input-border: #ccc;
     --input-focus-border: #007bff;
-    --sidebar-bg: #222; /* Dark background for sidebar */
+    --sidebar-bg: #222;/* Dark background for sidebar */
     --data-block-bg: #ADD8E6; /* Light blue for data blocks */
     --upload-box-bg: #007bff; /* Blue for upload box */
 }
@@ -385,6 +385,16 @@ body {
 }
 
 /* Buttons inside data blocks */
+.data-block-actions { /* NEW: Style the wrapper for buttons */
+    display: flex;
+    flex-direction: column; /* Stack buttons vertically */
+    gap: 5px; /* Space between buttons */
+    position: relative;
+    z-index: 6; /* Ensure this wrapper is above other content in data-block */
+    margin-left: auto; /* Push to the right */
+    align-items: flex-end; /* Align buttons to the right */
+}
+
 .details-button,
 .delete-button,
 .receive-waste-button,
@@ -400,17 +410,19 @@ body {
     transition: background-color 0.3s ease;
     white-space: nowrap;
     position: relative; /* Crucial for clickability */
-    z-index: 6; /* Ensure these buttons are above other elements in data block */
+    z-index: 7; /* Ensure these buttons are above their wrapper */
+    min-width: 120px; /* Give buttons a consistent width */
+    text-align: center;
 }
 
 .details-button:hover { background-color: #0056b3; }
-.delete-button { background-color: #dc3545; margin-left: 10px; }
+.delete-button { background-color: #dc3545; }
 .delete-button:hover { background-color: #c82333; }
-.receive-waste-button { background-color: #00bcd4; margin-right: 10px; }
+.receive-waste-button { background-color: #00bcd4; }
 .receive-waste-button:hover { background-color: #0097a7; }
-.scan-qr-button { background-color: #fd7e14; margin-left: 10px; }
+.scan-qr-button { background-color: #fd7e14; }
 .scan-qr-button:hover { background-color: #e66a00; }
-.show-qr-button { background-color: #6f42c1; margin-left: 10px; }
+.show-qr-button { background-color: #6f42c1; }
 .show-qr-button:hover { background-color: #5d35a6; }
 
 /* Received Status Text */
@@ -422,6 +434,8 @@ body {
     margin-right: 10px;
     position: relative; /* Ensure it's visible */
     z-index: 6;
+    text-align: right; /* Align text to the right within its flex container */
+    width: 100%; /* Take full width of its flex container */
 }
 
 
@@ -509,9 +523,9 @@ body {
     display: flex;
     width: 100%;
     gap: 30px;
-    margin-bottom: 30px;
     flex-wrap: wrap;
     justify-content: center;
+    margin-bottom: 30px; /* Adjusted margin-bottom to avoid overflow */
 }
 
 .upload-group {
