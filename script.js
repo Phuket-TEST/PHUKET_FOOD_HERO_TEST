@@ -6,7 +6,7 @@ const firebaseConfig = {
   projectId: "phuket-food-hero-bdf99",
   storageBucket: "phuket-food-hero-bdf99.firebasestorage.app",
   messagingSenderId: "186105687007",
-  appId: "1:186105687007:web:7f4395dfea7e8ac942326a",
+  appId: "1:186105687007:web:7f4395dfea4e8ac942326a", // แก้ไข App ID
   measurementId: "G-56SEESNQWF"
 };
 
@@ -21,39 +21,99 @@ const calculateStars = (count) => {
     return Math.floor(count / 10);
 };
 
+// NEW Helper function to remove undefined properties from an object
+function cleanObject(obj) {
+    const newObj = {};
+    for (const key in obj) {
+        if (obj.hasOwnProperty(key) && obj[key] !== undefined) {
+            newObj[key] = obj[key];
+        }
+    }
+    return newObj;
+}
+
+
 // --- Firebase Authentication Functions ---
 async function handleAuthSubmission(email, password, role, additionalData = {}) {
     let currentUser;
     let userDocRef;
 
+    // Basic frontend validation for password length
+    if (password.length < 6) {
+        alert('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร');
+        return;
+    }
+
     try {
-        // Try to create user first
-        // TODO: Update to your Render.com Backend URL if you're using it (otherwise, Firebase handles this directly)
-        currentUser = await auth.createUserWithEmailAndPassword(email, password); // Firebase handles creation
+        // Try to create user first in Firebase Authentication
+        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+        currentUser = userCredential.user;
+        
+        // --- IMPORTANT: Robust check for currentUser and UID ---
+        if (!currentUser || !currentUser.uid) {
+            console.error("Auth Error: currentUser or UID is undefined after createUserWithEmailAndPassword.");
+            alert('ลงทะเบียนไม่สำเร็จ: ผู้ใช้ไม่ได้ถูกสร้างอย่างถูกต้อง (UID หายไป)');
+            await auth.signOut();
+            loadMainPage();
+            return;
+        }
+        console.log("Firebase Auth: User created with UID:", currentUser.uid);
+        // --- END IMPORTANT CHECK ---
         
         // Save user data to Firestore
-        userDocRef = db.collection('users').doc(currentUser.uid);
-        await userDocRef.set({
-            email: email,
-            role: role,
-            wastePostsCount: 0,
-            wasteReceivedCount: 0,
-            stars: 0,
-            ...additionalData // Add role-specific data
-        });
-        alert('ลงทะเบียนและเข้าสู่ระบบสำเร็จ!');
+        // --- NEW: Wrap Firestore document creation in its own try-catch ---
+        try {
+            userDocRef = db.collection('users').doc(currentUser.uid);
+            
+            // Clean additionalData to remove undefined fields before setting
+            const dataToSet = cleanObject({
+                email: email,
+                role: role,
+                wastePostsCount: 0,
+                wasteReceivedCount: 0,
+                stars: 0,
+                ...additionalData // Add role-specific data
+            });
+
+            await userDocRef.set(dataToSet); // Use the cleaned data
+            console.log("Firestore: User document created for UID:", currentUser.uid);
+            alert('ลงทะเบียนและเข้าสู่ระบบสำเร็จ!');
+        } catch (firestoreError) {
+            console.error("Firestore Error during user document creation:", firestoreError);
+            alert('ลงทะเบียนไม่สำเร็จ: ไม่สามารถบันทึกข้อมูลโปรไฟล์ (อาจเกิดจากกฎความปลอดภัยหรือปัญหาฐานข้อมูล): ' + firestoreError.message);
+            // Optional: Delete user from Auth if Firestore document creation fails
+            if (auth.currentUser) { // Ensure user is still logged in to delete
+                await auth.currentUser.delete();
+            }
+            await auth.signOut();
+            loadMainPage();
+            return;
+        }
+        // --- END NEW Firestore try-catch ---
 
     } catch (error) {
         if (error.code === 'auth/email-already-in-use') {
-            console.log('User already registered, attempting login...');
+            console.log('User already registered in Firebase Auth, attempting login...');
             try {
                 // If email already in use, try to sign in
-                // TODO: Update to your Render.com Backend URL
-                currentUser = await auth.signInWithEmailAndPassword(email, password); // Firebase handles sign in
+                const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                currentUser = userCredential.user;
+                
+                // --- NEW: Robust check for currentUser and UID after sign-in ---
+                if (!currentUser || !currentUser.uid) {
+                    console.error("Auth Error: currentUser or UID is undefined after signInWithEmailAndPassword.");
+                    alert('เข้าสู่ระบบล้มเหลว: ไม่สามารถระบุผู้ใช้ได้');
+                    await auth.signOut();
+                    loadMainPage();
+                    return;
+                }
+                console.log("Firebase Auth: User signed in with existing account. UID:", currentUser.uid);
+                // --- END NEW CHECK ---
+                
                 alert('เข้าสู่ระบบสำเร็จ!');
             } catch (loginError) {
                 alert('เข้าสู่ระบบล้มเหลว: ' + (loginError.message || 'อีเมลหรือรหัสผ่านไม่ถูกต้อง'));
-                console.error('Login Error:', loginError);
+                console.error('Login Error during re-attempt:', loginError);
                 return;
             }
         } else {
@@ -63,10 +123,12 @@ async function handleAuthSubmission(email, password, role, additionalData = {}) 
         }
     }
 
-    if (currentUser) {
-        // Fetch user data including role and stars from Firestore
+    if (currentUser && currentUser.uid) { // Ensure currentUser and its uid are available
+        console.log("Attempting to fetch user document from Firestore for UID:", currentUser.uid);
         const userDoc = await db.collection('users').doc(currentUser.uid).get();
+        
         if (userDoc.exists) {
+            console.log("Firestore: User document found.");
             const userDataFromFirestore = userDoc.data();
             localStorage.setItem('userRole', userDataFromFirestore.role); // Ensure correct role
             localStorage.setItem('userId', currentUser.uid); // Store UID for future reference
@@ -79,24 +141,46 @@ async function handleAuthSubmission(email, password, role, additionalData = {}) 
                 loadFarmerDashboard();
             }
         } else {
-            console.error("User document not found in Firestore after auth. Logging out.");
+            console.error("Firestore Error: User document NOT found for UID:", currentUser.uid, ". This user exists in Auth but not Firestore. Automatic logout initiated.");
             alert('ไม่พบข้อมูลโปรไฟล์ผู้ใช้ กรุณาลงทะเบียนใหม่');
             await auth.signOut(); // Log out if profile not found
             loadMainPage(); // Fallback
         }
+    } else {
+        console.error("handleAuthSubmission final check: currentUser or currentUser.uid is missing after all attempts.");
+        alert("เกิดข้อผิดพลาดภายในระบบ: ไม่สามารถยืนยันผู้ใช้ได้");
+        loadMainPage(); // Fallback if current user somehow becomes invalid
     }
 }
 
 async function genericLoginAttempt(email, password) {
+    // Basic frontend validation for password length
+    if (password.length < 6) {
+        alert('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร');
+        return;
+    }
     try {
         const userCredential = await auth.signInWithEmailAndPassword(email, password);
         const currentUser = userCredential.user;
+        
+        // --- IMPORTANT: Robust check for currentUser and UID ---
+        if (!currentUser || !currentUser.uid) {
+            console.error("Auth Error: currentUser or UID is undefined after signInWithEmailAndPassword (generic).");
+            alert('เข้าสู่ระบบล้มเหลว: ไม่สามารถระบุผู้ใช้ได้');
+            await auth.signOut();
+            loadMainPage();
+            return;
+        }
+        console.log("Firebase Auth: Generic login successful. UID:", currentUser.uid);
+        // --- END IMPORTANT CHECK ---
 
         localStorage.setItem('userId', currentUser.uid); // Store UID for future reference
 
-        // Fetch user data including role and stars from Firestore
+        console.log("Attempting to fetch user document from Firestore for UID:", currentUser.uid);
         const userDoc = await db.collection('users').doc(currentUser.uid).get();
+        
         if (userDoc.exists) {
+            console.log("Firestore: User document found during generic login.");
             const userDataFromFirestore = userDoc.data();
             localStorage.setItem('userRole', userDataFromFirestore.role);
             localStorage.setItem('userStars', userDataFromFirestore.stars || 0);
@@ -108,6 +192,7 @@ async function genericLoginAttempt(email, password) {
                 loadFarmerDashboard();
             }
         } else {
+            console.error("Firestore Error: User document NOT found for UID:", currentUser.uid, ". This user exists in Auth but not Firestore. Automatic logout initiated.");
             alert('ไม่พบข้อมูลโปรไฟล์ผู้ใช้ กรุณาลงทะเบียนใหม่');
             await auth.signOut(); // Log out if profile not found
             loadMainPage();
@@ -140,10 +225,12 @@ async function renderDataBlocks(data, targetWrapperId) {
     // Fetch user's stars for display
     let userStars = 0;
     try {
-        // TODO: Update to your Render.com Backend URL and create this API in Backend (routes/auth.js)
-        const profileResponse = await db.collection('users').doc(userId).get();
-        const profileData = profileResponse.data();
-        userStars = profileData.stars || 0;
+        // Fetch current user's data from Firestore to get updated stars
+        const userDoc = await db.collection('users').doc(userId).get();
+        if(userDoc.exists) {
+            userStars = userDoc.data().stars || 0;
+            localStorage.setItem('userStars', userStars); // Update local storage
+        }
     } catch (error) {
         console.error('Failed to fetch user stars:', error);
     }
@@ -543,17 +630,20 @@ function loadContent(contentHtml) {
             const purpose = formData.get('purpose');
             const otherPurpose = formData.get('otherPurpose');
 
+            // --- IMPORTANT FIX: Filter out undefined otherPurpose before sending ---
+            const additionalData = {
+                name: formData.get('name'),
+                contactNumber: formData.get('contactNumber'),
+                purpose: purpose,
+                ...(purpose === 'other' && otherPurpose.trim() !== '' ? { otherPurpose: otherPurpose } : {}) // Only add otherPurpose if 'other' is selected and it has a value
+            };
+            // --- END IMPORTANT FIX ---
+
             if (purpose === 'other' && !otherPurpose.trim()) {
                 alert('กรุณาระบุความต้องการอื่นๆ');
                 return;
             }
 
-            const additionalData = {
-                name: formData.get('name'),
-                contactNumber: formData.get('contactNumber'),
-                purpose: purpose,
-                otherPurpose: purpose === 'other' ? otherPurpose : undefined
-            };
             await handleAuthSubmission(email, password, 'farmer', additionalData);
         });
     }
@@ -835,14 +925,14 @@ function getFarmerLoginPageHtml() {
                     <label for="purposeSelect">ความต้องการของคุณ</label>
                     <select id="purposeSelect" name="purpose" required>
                         <option value="">-- เลือกความต้องการ --</option>
-                        <option value="animal_feed" ${purpose === 'animal_feed' ? 'selected' : ''}>อยากนำเศษอาหารไปเลี้ยงสัตว์</option>
-                        <option value="compost" ${purpose === 'compost' ? 'selected' : ''}>อยากนำเศษอาหารไปหมักทำปุ๋ย</option>
-                        <option value="other" ${purpose === 'other' ? 'selected' : ''}>อื่นๆ</option>
+                        <option value="animal_feed">อยากนำเศษอาหารไปเลี้ยงสัตว์</option>
+                        <option value="compost">อยากนำเศษอาหารไปหมักทำปุ๋ย</option>
+                        <option value="other">อื่นๆ</option>
                     </select>
                 </div>
                 <div class="form-group" id="otherPurposeInput">
                     <label for="otherPurpose">ระบุความต้องการอื่นๆ</label>
-                    <textarea id="otherPurpose" name="otherPurpose" rows="3">${otherPurpose}</textarea>
+                    <textarea id="otherPurpose" name="otherPurpose" rows="3"></textarea>
                 </div>
                 <button type="submit" class="login-button">Login</button>
                 <button type="button" class="back-button" id="backToMain">ย้อนกลับ</button>
@@ -850,6 +940,7 @@ function getFarmerLoginPageHtml() {
         </div>
     `;
 }
+
 
 // School Dashboard Page HTML content - now dynamically loads data
 function getSchoolDashboardHtml() {
