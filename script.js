@@ -1025,8 +1025,8 @@ function getSchoolDashboardHtml() {
             <div class="dashboard-buttons">
                 <button type="button" class="back-button" id="backToMainFromDashboard">ย้อนกลับ</button>
                 <button type="button" class="add-data-button" id="addWasteDataButton">เพิ่มข้อมูลเศษอาหาร</button>
-                <button type="button" class="analysis-button" id="viewAnalysisButton">ดูรายงานวิเคราะห์</button>
-                <button type="button" class="edit-profile-button" id="editProfileButton">แก้ไขข้อมูล</button>
+                <button type="button" class="analysis-button" id="viewAnalysisButton">กราฟวิเคราะห์ข้อมูล</button>
+                <button type="button" class="edit-profile-button" id="editProfileButton">โปรไฟล์</button>
                 <button type="button" class="knowledge-button" id="knowledgeButton">ความรู้เรื่องการกำจัดขยะ</button>
                 <button type="button" class="pending-delivery-button" id="pendingDeliveryButton">รายการเศษอาหารที่ต้องส่ง</button>
             </div>
@@ -1217,7 +1217,7 @@ function getEditProfilePageHtml(userData = {}) {
 
     return `
         <div class="edit-profile-container">
-            <h2>แก้ไขข้อมูลส่วนตัว</h2>
+            <h2>โปรไฟล์</h2>
             <form id="editProfileForm">
                 ${roleSpecificFields}
                 <div class="form-group">
