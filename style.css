@@ -2,18 +2,18 @@
 @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@400;700&display=swap');
 
 :root {
-    --primary-blue: #007bff; /* Blue color for buttons */
+    --primary-blue: #28a745; /* Changed to a shade of green for primary actions */
     --dark-text: #333;
     --light-text: #fff;
     --grey-bg: #f4f4f4;
-    --header-bg: #ffffff;
+    --header-bg: #c8e6c9; /* Light green for header */
     --footer-bg: #333;
     --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     --input-border: #ccc;
-    --input-focus-border: #007bff;
+    --input-focus-border: #28a745; /* Green for focus */
     --sidebar-bg: #222;/* Dark background for sidebar */
-    --data-block-bg: #ADD8E6; /* Light blue for data blocks */
-    --upload-box-bg: #007bff; /* Blue for upload box */
+    --data-block-bg: #d4edda; /* Light green for data blocks */
+    --upload-box-bg: #28a745; /* Green for upload box */
 }
 
 body {
@@ -32,8 +32,8 @@ body {
     padding: 10px 20px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     text-align: center;
-    position: relative; /* Ensure z-index works for header content */
-    z-index: 100; /* Header should be above almost everything else */
+    position: relative;
+    z-index: 100;
 }
 
 .top-bar {
@@ -56,8 +56,8 @@ body {
     text-decoration: none;
     color: var(--dark-text);
     font-weight: bold;
-    position: relative; /* Ensure z-index works */
-    z-index: 101; /* Sign-in button above header content */
+    position: relative;
+    z-index: 101;
 }
 
 .hero-section {
@@ -76,29 +76,27 @@ body {
 .content-section {
     flex-grow: 1;
     display: flex;
-    flex-direction: column; /* Stack question and cards vertically */
-    justify-content: center; /* Center content vertically */
-    align-items: center; /* Center content horizontally */
-    padding: 40px 20px; /* Adjust padding as needed */
-    /* TODO: Replace with your actual background image path */
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px;
     background-image: url('images/background_waste.jpg');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
     position: relative;
-    z-index: 0; /* Base z-index for content-section */
+    z-index: 0;
 }
 
 /* Background Overlay (now a div in HTML, not a pseudo-element) */
 .background-overlay {
-    /* content: ''; Removed this line, it's a div now. */
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
     background-color: rgba(0, 0, 0, 0.6); /* Increased opacity for better white text readability */
-    z-index: 1; /* Overlay is above background-image but below loaded HTML */
+    z-index: 1;
 }
 
 /* Styles for the main page content layout */
@@ -107,57 +105,61 @@ body {
     flex-direction: column;
     align-items: center;
     width: 100%;
-    max-width: 1000px; /* Limit overall width for better layout */
+    max-width: 1000px;
     position: relative;
-    z-index: 2; /* Main page content above the overlay */
+    z-index: 2;
 }
 
 .main-question-text {
-    color: var(--light-text); /* White color */
-    font-size: 1.8em; /* Adjust size as needed */
+    color: var(--light-text);
+    font-size: 1.8em;
     font-weight: 700;
-    text-shadow: 1px 1px 3px rgba(0,0,0,0.5); /* Optional: add shadow for readability */
-    margin-bottom: 40px; /* Space between question and cards */
-    text-align: center; /* Ensure it's centered */
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+    margin-bottom: 40px;
+    text-align: center;
 }
 
 .cards-and-descriptions-wrapper {
     display: flex;
     justify-content: center;
-    gap: 40px; /* Space between the two card-description groups */
-    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+    gap: 40px;
+    flex-wrap: wrap;
     width: 100%;
 }
 
 .card-with-description {
     display: flex;
     flex-direction: column;
-    align-items: center; /* Center card and text horizontally */
-    text-align: center; /* Center text within its own block */
-    max-width: 450px; /* Max width for each card group */
+    align-items: center;
+    text-align: center;
+    max-width: 450px;
 }
 
 .card {
-    background-color: var(--header-bg); /* White background for the card itself */
+    background-color: var(--header-bg);
     border-radius: 15px;
     box-shadow: var(--card-shadow);
     overflow: hidden;
     width: 100%;
-    height: 100%; /* Make card take full height of its parent */
-    padding-bottom: 20px; /* Padding inside the card for button */
-    margin-bottom: 20px; /* Space between card and description text */
+    height: 100%;
+    padding-bottom: 20px;
+    margin-bottom: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
 }
 
 .card-image {
-    width: 100%;
-    height: 280px;
+    width: 200px;
+    height: 200px;
     object-fit: cover;
     display: block;
-    border-bottom: 5px solid var(--primary-blue);
+    border-radius: 50%; /* Make it circular */
+    border: 5px solid var(--primary-blue);
+    margin-top: 20px;
+    margin-bottom: 20px;
 }
+
 
 .button {
     background-color: var(--primary-blue);
@@ -169,7 +171,7 @@ body {
     font-weight: 700;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    margin-top: 20px; /* Space between image and button */
+    margin-top: 20px;
 }
 
 .button:hover {
@@ -177,11 +179,11 @@ body {
 }
 
 .card-description-text {
-    color: var(--light-text); /* White color for description text */
-    font-size: 0.95em; /* Adjust size as needed */
+    color: var(--light-text);
+    font-size: 0.95em;
     line-height: 1.4;
-    text-shadow: 1px 1px 3px rgba(0,0,0,0.5); /* Optional: add shadow for readability */
-    max-width: 80%; /* Limit width for better readability */
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+    max-width: 80%;
 }
 
 
@@ -194,8 +196,8 @@ body {
     width: 100%;
     max-width: 500px;
     text-align: center;
-    position: relative; /* Ensure z-index works */
-    z-index: 2; /* Login form above overlay */
+    position: relative;
+    z-index: 2;
 }
 
 .login-container h2 {
@@ -222,14 +224,14 @@ body {
 .form-group input[type="password"],
 .form-group input[type="tel"],
 .form-group select {
-    width: calc(100% - 20px); /* Adjust for padding */
+    width: calc(100% - 20px);
     padding: 12px 10px;
     border: 1px solid var(--input-border);
     border-radius: 8px;
     font-size: 1em;
-    box-sizing: border-box; /* Include padding in width */
+    box-sizing: border-box;
     transition: border-color 0.3s ease;
-    background-color: rgba(255, 255, 255, 0.8); /* Slightly transparent white input background */
+    background-color: rgba(255, 255, 255, 0.8);
     color: var(--dark-text);
 }
 
@@ -273,7 +275,7 @@ body {
     transition: background-color 0.3s ease;
     width: 100%;
     margin-top: 15px;
-    position: relative; /* Ensure it's clickable */
+    position: relative;
     z-index: 5;
 }
 
@@ -282,7 +284,7 @@ body {
 }
 
 .back-button {
-    background-color: #6c757d; /* Grey color for back button */
+    background-color: #6c757d;
     color: var(--light-text);
     border: none;
     padding: 10px 20px;
@@ -292,7 +294,7 @@ body {
     transition: background-color 0.3s ease;
     margin-top: 10px;
     width: 100%;
-    position: relative; /* Ensure it's clickable */
+    position: relative;
     z-index: 5;
 }
 
@@ -316,12 +318,12 @@ body {
     overflow: hidden;
     margin-bottom: 20px;
     position: relative;
-    z-index: 3; /* Content area above main containers background */
+    z-index: 3;
 }
 
 .sidebar {
-    width: 250px; /* Fixed width for sidebar */
-    background-color: var(--sidebar-bg); /* Dark background */
+    width: 250px;
+    background-color: var(--sidebar-bg);
     color: var(--light-text);
     padding: 20px;
     box-sizing: border-box;
@@ -331,15 +333,15 @@ body {
     border-top-left-radius: 15px;
     border-bottom-left-radius: 15px;
     position: relative;
-    z-index: 4; /* Sidebar above main content area */
+    z-index: 4;
 }
 
 .main-display-area {
-    flex-grow: 1; /* Take remaining space */
+    flex-grow: 1;
     padding: 20px;
     overflow-y: auto;
     position: relative;
-    z-index: 3; /* Main display area above lower z-index elements */
+    z-index: 3;
 }
 
 /* Data block wrapper */
@@ -360,7 +362,7 @@ body {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     width: 100%;
     position: relative;
-    z-index: 5; /* Ensure data blocks are on top within main-display-area */
+    z-index: 5;
 }
 
 .data-item-image {
@@ -385,14 +387,14 @@ body {
 }
 
 /* Buttons inside data blocks */
-.data-block-actions { /* NEW: Style the wrapper for buttons */
+.data-block-actions {
     display: flex;
-    flex-direction: column; /* Stack buttons vertically */
-    gap: 5px; /* Space between buttons */
+    flex-direction: column;
+    gap: 5px;
     position: relative;
-    z-index: 6; /* Ensure this wrapper is above other content in data-block */
-    margin-left: auto; /* Push to the right */
-    align-items: flex-end; /* Align buttons to the right */
+    z-index: 6;
+    margin-left: auto;
+    align-items: flex-end;
 }
 
 .details-button,
@@ -409,14 +411,14 @@ body {
     cursor: pointer;
     transition: background-color 0.3s ease;
     white-space: nowrap;
-    position: relative; /* Crucial for clickability */
-    z-index: 7; /* Ensure these buttons are above their wrapper */
-    min-width: 120px; /* Give buttons a consistent width */
+    position: relative;
+    z-index: 7;
+    min-width: 120px;
     text-align: center;
 }
 
 .details-button:hover { background-color: #0056b3; }
-.delete-button { background-color: #dc3545; }
+.delete-button { background-color: #dc3545; } /* Red for delete button on dashboard */
 .delete-button:hover { background-color: #c82333; }
 .receive-waste-button { background-color: #00bcd4; }
 .receive-waste-button:hover { background-color: #0097a7; }
@@ -429,13 +431,13 @@ body {
 .received-status {
     font-size: 0.9em;
     font-weight: 600;
-    color: #28a745; /* Green */
+    color: #28a745;
     white-space: nowrap;
     margin-right: 10px;
-    position: relative; /* Ensure it's visible */
+    position: relative;
     z-index: 6;
-    text-align: right; /* Align text to the right within its flex container */
-    width: 100%; /* Take full width of its flex container */
+    text-align: right;
+    width: 100%;
 }
 
 
@@ -446,7 +448,7 @@ body {
     width: 100%;
     gap: 20px;
     position: relative;
-    z-index: 10; /* Bring buttons to front */
+    z-index: 10;
 }
 
 .dashboard-buttons .button,
@@ -468,8 +470,8 @@ body {
     transition: background-color 0.3s ease;
     flex-grow: 1;
     max-width: 300px;
-    position: relative; /* Ensure they are clickable */
-    z-index: 11; /* Above other dashboard elements */
+    position: relative;
+    z-index: 11;
 }
 
 .add-data-button:hover { background-color: #0056b3; }
@@ -495,8 +497,8 @@ body {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     width: 100%;
     max-width: 900px;
-    position: relative; /* Ensure z-index works */
-    z-index: 2; /* Container above overlay */
+    position: relative;
+    z-index: 2;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -513,7 +515,7 @@ body {
 
 .add-waste-container form {
     width: 100%;
-    background-color: transparent; /* Form background transparent */
+    background-color: transparent;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -525,7 +527,7 @@ body {
     gap: 30px;
     flex-wrap: wrap;
     justify-content: center;
-    margin-bottom: 30px; /* Adjusted margin-bottom to avoid overflow */
+    margin-bottom: 30px;
 }
 
 .upload-group {
@@ -615,14 +617,14 @@ body {
 .pending-delivery-container,
 .received-waste-container,
 .qr-code-container {
-    background-color: rgba(255, 255, 255, 0.1); /* Semi-transparent background */
+    background-color: rgba(255, 255, 255, 0.1);
     border-radius: 15px;
     padding: 30px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     width: 100%;
     max-width: 1000px;
-    position: relative; /* Ensure z-index works */
-    z-index: 2; /* Main content above overlay */
+    position: relative;
+    z-index: 2;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -642,7 +644,7 @@ body {
 .pending-list-area,
 .received-list-area {
     width: 100%;
-    max-height: 60vh; /* Allow scrolling for lists */
+    max-height: 60vh;
     overflow-y: auto;
     background-color: var(--header-bg);
     border-radius: 10px;
@@ -650,7 +652,7 @@ body {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     margin-bottom: 20px;
     position: relative;
-    z-index: 3; /* Ensure lists are above background elements */
+    z-index: 3;
 }
 
 /* QR Code Display Styles */
@@ -661,7 +663,7 @@ body {
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     margin-bottom: 20px;
     text-align: center;
-    width: fit-content; /* Adjust width to content */
+    width: fit-content;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -682,7 +684,7 @@ body {
 
 /* Specific button for QR Scan (school) */
 .scan-qr-button {
-    background-color: #fd7e14; /* Orange */
+    background-color: #fd7e14;
     color: var(--light-text);
     border: none;
     padding: 8px 15px;
@@ -700,8 +702,8 @@ body {
     background-color: #e66a00;
 }
 
-.show-qr-button { /* for farmer */
-    background-color: #6f42c1; /* Purple */
+.show-qr-button {
+    background-color: #6f42c1;
     color: var(--light-text);
     border: none;
     padding: 8px 15px;
@@ -728,7 +730,7 @@ body {
     font-size: 0.85em;
     width: 100%;
     position: relative;
-    z-index: 50; /* Bring footer above potential overlays */
+    z-index: 50;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -744,6 +746,76 @@ body {
 }
 
 
+/* NEW / MODIFIED: Custom Modal Styles */
+.custom-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7); /* Darker overlay for focus */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* Ensure it's on top of everything */
+}
+
+.custom-modal-content {
+    background-color: var(--header-bg); /* Light green background for content */
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    max-width: 400px;
+    width: 90%; /* Responsive width */
+    color: var(--dark-text); /* Ensure text is readable */
+    font-size: 1.1em;
+}
+
+.custom-modal-content p {
+    margin-bottom: 25px;
+    font-weight: 600;
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.modal-button {
+    border: none;
+    padding: 12px 25px;
+    border-radius: 25px;
+    font-size: 1em;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    min-width: 100px;
+}
+
+/* สีสำหรับปุ่ม Yes ของ Modal (เฉพาะสำหรับลบข้อมูล) - ใช่ = แดง, ไม่ = เขียว */
+.modal-button-yes {
+    background-color: #28a745; /* Red for "Yes" on delete confirmation */
+    color: var(--light-text);
+}
+
+.modal-button-yes:hover {
+    background-color: #218838; /* Darker#dc3545 red on#c82333 hover */
+    transform: translateY(-2px);
+}
+
+/* สีสำหรับปุ่ม No ของ Modal (เฉพาะสำหรับลบข้อมูล) - ใช่ = แดง, ไม่ = เขียว */
+.modal-button-no {
+    background-color: #dc3545; /* Green for "No" on delete confirmation */
+    color: var(--light-text);
+}
+
+.modal-button-no:hover {
+    background-color: #c82333; /* Darker green on hover */
+    transform: translateY(-2px);
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .main-question-text {
@@ -751,14 +823,15 @@ body {
         margin-bottom: 30px;
     }
     .cards-and-descriptions-wrapper {
-        flex-direction: column; /* Stack cards vertically on smaller screens */
+        flex-direction: column;
         gap: 30px;
     }
     .card-with-description {
-        max-width: 90%; /* Make cards wider on smaller screens */
+        max-width: 90%;
     }
     .card-image {
-        height: 250px;
+        height: 200px;
+        width: 200px;
     }
     .button {
         font-size: 1.1em;
@@ -910,7 +983,7 @@ body {
         padding: 15px;
     }
     .edit-profile-container h2 {
-        font-size: 1.8em;
+        font-size: 1.5em;
     }
 
     /* Knowledge Page Responsive */
@@ -937,7 +1010,8 @@ body {
         margin-bottom: 20px;
     }
     .card-image {
-        height: 200px;
+        height: 150px;
+        width: 150px;
     }
     .button {
         font-size: 1em;
