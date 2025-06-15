@@ -149,6 +149,11 @@ async function handleAuthSubmission(email, password, role, additionalData = {}) 
             localStorage.setItem('userRole', userDataFromFirestore.role); // Ensure correct role
             localStorage.setItem('userId', currentUser.uid); // Store UID for future reference
             localStorage.setItem('userStars', userDataFromFirestore.stars || 0); // Store stars
+            // NEW: Store user's subdistrict for farmer filtering
+            if (userDataFromFirestore.role === 'farmer' && userDataFromFirestore.subDistrict) {
+                localStorage.setItem('userSubDistrict', userDataFromFirestore.subDistrict);
+            }
+
 
             // Navigate based on actual role from Firestore
             if (userDataFromFirestore.role === 'school') {
@@ -200,6 +205,10 @@ async function genericLoginAttempt(email, password) {
             const userDataFromFirestore = userDoc.data();
             localStorage.setItem('userRole', userDataFromFirestore.role);
             localStorage.setItem('userStars', userDataFromFirestore.stars || 0);
+            // NEW: Store user's subdistrict for farmer filtering
+            if (userDataFromFirestore.role === 'farmer' && userDataFromFirestore.subDistrict) {
+                localStorage.setItem('userSubDistrict', userDataFromFirestore.subDistrict);
+            }
 
             alert('เข้าสู่ระบบสำเร็จ!');
             if (userDataFromFirestore.role === 'school') {
@@ -228,7 +237,7 @@ async function renderDataBlocks(data, targetWrapperId) {
 
     wrapper.innerHTML = ''; // Clear previous content
 
-    console.log(`Rendering data blocks for ${targetWrapperId}. Data received COUNT:`, data.length, "Data:", data); // Log data received count and data
+    console.log(`Rendering data blocks for ${targetWrapperId}. Data received COUNT:`, data.length, "Data:", data);
 
     if (data.length === 0) {
         wrapper.innerHTML = '<p style="color: #666; text-align: center; margin-top: 30px;">ไม่พบข้อมูล</p>';
@@ -276,6 +285,10 @@ async function renderDataBlocks(data, targetWrapperId) {
         const schoolName = item.schoolInfo ? item.schoolInfo.instituteName : 'ไม่ระบุโรงเรียน';
         const schoolContact = item.schoolInfo ? item.schoolInfo.contactNumber : 'ไม่ระบุ';
         const schoolEmail = item.schoolInfo ? item.schoolInfo.email : 'ไม่ระบุ';
+        // NEW: Get school's full address for display
+        const schoolFullAddress = item.schoolInfo ? 
+            `${item.schoolInfo.address || ''} ${item.schoolInfo.subdistrict || ''} ${item.schoolInfo.district || ''} ${item.schoolInfo.province || ''}`.trim() : 'ไม่ระบุที่อยู่';
+
 
         // Build action buttons for each block
         let actionButtonsHtml = '';
@@ -313,8 +326,7 @@ async function renderDataBlocks(data, targetWrapperId) {
             if (item.receivedBy === userId) {
                 actionButtonsHtml += `
                     <p>สถานะ: <span class="${item.isDelivered ? 'status-delivered' : 'status-pending'}">${item.isDelivered ? 'ส่งมอบแล้ว' : 'รอส่งมอบ'}</span></p>
-                    <button class="show-qr-button" data-id="${item.id}">แสดง QR Code</button> <!-- แทนที่ปุ่มรายละเอียดด้วยปุ่มแสดงQR code -->
-                `;
+                    <button class="show-qr-button" data-id="${item.id}">แสดง QR Code</button> `;
             }
         }
 
@@ -326,10 +338,9 @@ async function renderDataBlocks(data, targetWrapperId) {
                 <p><strong>ปริมาณ:</strong> ${item.weight} kg</p>
                 <p><strong>วันที่:</strong> ${date} (${postedAt})</p>
                 <p><strong>จาก:</strong> ${schoolName}</p>
-                <p><strong>ติดต่อ:</strong> ${schoolContact}</p>
+                <p><strong>ที่อยู่:</strong> ${schoolFullAddress}</p> <p><strong>ติดต่อ:</strong> ${schoolContact}</p>
             </div>
-            <div class="data-block-actions"> <!-- NEW: Wrapper for buttons -->
-                ${actionButtonsHtml}
+            <div class="data-block-actions"> ${actionButtonsHtml}
             </div>
         `;
         wrapper.appendChild(dataBlock);
@@ -621,7 +632,16 @@ function loadContent(contentHtml) {
     }
     // Event listener for back from edit profile page
     if (document.getElementById('backFromEditProfile')) {
-        document.getElementById('backFromEditProfile').addEventListener('click', loadSchoolDashboard);
+        document.getElementById('backFromEditProfile').addEventListener('click', () => {
+            const userRole = localStorage.getItem('userRole');
+            if (userRole === 'school') {
+                loadSchoolDashboard();
+            } else if (userRole === 'farmer') {
+                loadFarmerDashboard();
+            } else {
+                loadMainPage(); // Fallback
+            }
+        });
     }
     // Event listener for back from knowledge page
     if (document.getElementById('backFromKnowledge')) {
@@ -647,7 +667,7 @@ function loadContent(contentHtml) {
     }
     // NEW: Event listener for back from QR scan page
     if (document.getElementById('backFromQRScan')) {
-        document.getElementById('backFromQRScan').addEventListener('click', loadPendingDeliveryPage); // Back to pending delivery list
+        document.getElementById('backFromQRScan').addEventListener('click', loadReceivedWastePage); // Changed to go back to received waste list for farmer
     }
 
 
@@ -658,6 +678,36 @@ function loadContent(contentHtml) {
     if (document.getElementById('editPurposeSelect')) { // For edit profile page
         document.getElementById('editPurposeSelect').addEventListener('change', toggleEditOtherPurposeInput);
     }
+    // NEW: Add event listeners for school address dropdowns
+    if (document.getElementById('provinceSelect')) {
+        document.getElementById('provinceSelect').addEventListener('change', () => populateDistricts('provinceSelect', 'districtSelect', 'subdistrictSelect'));
+    }
+    if (document.getElementById('districtSelect')) {
+        document.getElementById('districtSelect').addEventListener('change', () => populateSubdistricts('districtSelect', 'subdistrictSelect'));
+    }
+    // NEW: Add event listeners for edit school address dropdowns
+    if (document.getElementById('editProvinceSelect')) {
+        document.getElementById('editProvinceSelect').addEventListener('change', () => populateDistricts('editProvinceSelect', 'editDistrictSelect', 'editSubdistrictSelect'));
+    }
+    if (document.getElementById('editDistrictSelect')) {
+        document.getElementById('editDistrictSelect').addEventListener('change', () => populateSubdistricts('editDistrictSelect', 'editSubdistrictSelect'));
+    }
+
+    // NEW: Add event listeners for farmer address dropdowns
+    if (document.getElementById('farmerProvince')) {
+        document.getElementById('farmerProvince').addEventListener('change', () => populateDistricts('farmerProvince', 'farmerDistrict', 'farmerSubDistrict'));
+    }
+    if (document.getElementById('farmerDistrict')) {
+        document.getElementById('farmerDistrict').addEventListener('change', () => populateSubdistricts('farmerDistrict', 'farmerSubDistrict'));
+    }
+    // NEW: Add event listeners for edit farmer address dropdowns
+    if (document.getElementById('editFarmerProvince')) {
+        document.getElementById('editFarmerProvince').addEventListener('change', () => populateDistricts('editFarmerProvince', 'editFarmerDistrict', 'editFarmerSubDistrict'));
+    }
+    if (document.getElementById('editFarmerDistrict')) {
+        document.getElementById('editFarmerDistrict').addEventListener('change', () => populateSubdistricts('editFarmerDistrict', 'editFarmerSubDistrict'));
+    }
+
 
     if (document.getElementById('schoolButton')) {
         console.log("Attaching listener to schoolButton"); // Added log
@@ -678,11 +728,14 @@ function loadContent(contentHtml) {
             const password = formData.get('password');
             const additionalData = {
                 instituteName: formData.get('instituteName'),
-                address: formData.get('address'),
+                province: formData.get('province'),
+                district: formData.get('district'),
+                subdistrict: formData.get('subdistrict'),
                 contactNumber: formData.get('contactNumber')
             };
             await handleAuthSubmission(email, password, 'school', additionalData);
         });
+        populateProvinces('provinceSelect'); // Populate provinces when school login page loads
     }
 
     const farmerLoginForm = document.getElementById('farmerLoginForm');
@@ -695,10 +748,20 @@ function loadContent(contentHtml) {
             const purpose = formData.get('purpose');
             const otherPurpose = formData.get('otherPurpose');
 
+            // NEW: Address fields for farmer
+            const address = formData.get('address');
+            const province = formData.get('province');
+            const district = formData.get('district');
+            const subDistrict = formData.get('subDistrict');
+
             // --- IMPORTANT FIX: Filter out undefined otherPurpose before sending ---
             const additionalData = {
                 name: formData.get('name'),
                 contactNumber: formData.get('contactNumber'),
+                address: address, // NEW
+                province: province, // NEW
+                district: district, // NEW
+                subDistrict: subDistrict, // NEW
                 purpose: purpose,
                 ...(purpose === 'other' && otherPurpose.trim() !== '' ? { otherPurpose: otherPurpose } : {}) // Only add otherPurpose if 'other' is selected and it has a value
             };
@@ -711,6 +774,7 @@ function loadContent(contentHtml) {
 
             await handleAuthSubmission(email, password, 'farmer', additionalData);
         });
+        populateProvinces('farmerProvince'); // Populate provinces for farmer login
     }
 
     const genericLoginForm = document.getElementById('genericLoginForm');
@@ -810,33 +874,66 @@ function loadContent(contentHtml) {
     if (editProfileForm) {
         editProfileForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            alert('คุณกดบันทึกข้อมูลแก้ไขแล้ว! (ยังไม่ส่งข้อมูลไปยัง Backend)');
-            // TODO: Phase 2 - Implement Backend API to update user profile
-            // Example:
-            // const userId = auth.currentUser ? auth.currentUser.uid : null;
-            // if (!userId) { alert('กรุณาเข้าสู่ระบบเพื่อแก้ไขโปรไฟล์'); return; }
-            // const formData = new FormData(editProfileForm);
-            // const updateData = {
-            //     instituteName: formData.get('instituteName') || undefined,
-            //     address: formData.get('address') || undefined,
-            //     contactNumber: formData.get('contactNumber') || undefined,
-            //     name: formData.get('name') || undefined,
-            //     purpose: formData.get('purpose') || undefined,
-            //     otherPurpose: formData.get('otherPurpose') || undefined
-            // };
-            // if (formData.get('password')) { // Only update password if provided
-            //     try {
-            //         await auth.currentUser.updatePassword(formData.get('password'));
-            //         console.log("Password updated successfully.");
-            //     } catch (passwordError) {
-            //         console.error("Error updating password:", passwordError);
-            //         alert("ไม่สามารถเปลี่ยนรหัสผ่านได้: " + passwordError.message);
-            //         return;
-            //     }
-            // }
-            // await db.collection('users').doc(userId).update(updateData);
-            // alert('บันทึกข้อมูลสำเร็จ!');
-            loadSchoolDashboard(); // Go back to dashboard
+            const userId = auth.currentUser ? auth.currentUser.uid : null;
+            if (!userId) { alert('กรุณาเข้าสู่ระบบเพื่อแก้ไขโปรไฟล์'); return; }
+            
+            const formData = new FormData(editProfileForm);
+            const userRole = localStorage.getItem('userRole');
+            
+            let updateData = {};
+
+            if (userRole === 'school') {
+                updateData = cleanObject({
+                    instituteName: formData.get('instituteName'),
+                    province: formData.get('province'),
+                    district: formData.get('district'),
+                    subdistrict: formData.get('subdistrict'),
+                    contactNumber: formData.get('contactNumber')
+                });
+            } else if (userRole === 'farmer') {
+                const purpose = formData.get('purpose');
+                const otherPurpose = formData.get('otherPurpose');
+                updateData = cleanObject({
+                    name: formData.get('name'),
+                    contactNumber: formData.get('contactNumber'),
+                    address: formData.get('address'),
+                    province: formData.get('province'),
+                    district: formData.get('district'),
+                    subDistrict: formData.get('subDistrict'),
+                    purpose: purpose,
+                    ...(purpose === 'other' && otherPurpose.trim() !== '' ? { otherPurpose: otherPurpose } : {})
+                });
+            }
+
+            if (formData.get('password')) { // Only update password if provided
+                const newPassword = formData.get('password');
+                if (newPassword.length < 6) {
+                    alert('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร');
+                    return;
+                }
+                try {
+                    await auth.currentUser.updatePassword(newPassword);
+                    console.log("Password updated successfully.");
+                } catch (passwordError) {
+                    console.error("Error updating password:", passwordError);
+                    alert("ไม่สามารถเปลี่ยนรหัสผ่านได้: " + passwordError.message);
+                    return;
+                }
+            }
+            
+            try {
+                await db.collection('users').doc(userId).update(cleanObject(updateData)); // Use cleanObject
+                alert('บันทึกข้อมูลสำเร็จ!');
+                // Reload dashboard based on role
+                if (userRole === 'school') {
+                    loadSchoolDashboard();
+                } else if (userRole === 'farmer') {
+                    loadFarmerDashboard();
+                }
+            } catch (firestoreUpdateError) {
+                console.error("Error updating user document:", firestoreUpdateError);
+                alert("ไม่สามารถบันทึกข้อมูลโปรไฟล์ได้: " + firestoreUpdateError.message);
+            }
         });
     }
 
@@ -890,7 +987,6 @@ function getMainPageHtml() {
             <div class="cards-and-descriptions-wrapper">
                 <div class="card-with-description">
                     <div class="card">
-                        <!-- TODO: Replace with your actual school image path -->
                         <img src="images/school.jpg" alt="รูปภาพโรงเรียน" class="card-image">
                         <button class="button" id="schoolButton">โรงเรียน</button>
                     </div>
@@ -898,7 +994,6 @@ function getMainPageHtml() {
                 </div>
                 <div class="card-with-description">
                     <div class="card">
-                        <!-- TODO: Replace with your actual farmer image path -->
                         <img src="images/farmer.jpg" alt="รูปภาพเกษตรกร" class="card-image">
                         <button class="button" id="farmerButton">เกษตรกร</button>
                     </div>
@@ -943,8 +1038,22 @@ function getSchoolLoginPageHtml() {
                     <input type="text" id="instituteName" name="instituteName" required>
                 </div>
                 <div class="form-group">
-                    <label for="address">ที่อยู่</label>
-                    <input type="text" id="address" name="address" required>
+                    <label for="provinceSelect">จังหวัด</label>
+                    <select id="provinceSelect" name="province" required>
+                        <option value="">-- เลือกจังหวัด --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="districtSelect">อำเภอ</label>
+                    <select id="districtSelect" name="district" required disabled>
+                        <option value="">-- เลือกอำเภอ --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="subdistrictSelect">ตำบล</label>
+                    <select id="subdistrictSelect" name="subdistrict" required disabled>
+                        <option value="">-- เลือกตำบล --</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label for="contactNumber">เบอร์ติดต่อ</label>
@@ -987,6 +1096,28 @@ function getFarmerLoginPageHtml() {
                     <input type="password" id="farmerPassword" name="password" required>
                 </div>
                 <div class="form-group">
+                    <label for="farmerAddress">ที่อยู่ (บ้านเลขที่, ถนน, ซอย)</label>
+                    <input type="text" id="farmerAddress" name="address" required>
+                </div>
+                <div class="form-group">
+                    <label for="farmerProvince">จังหวัด</label>
+                    <select id="farmerProvince" name="province" required>
+                        <option value="">-- เลือกจังหวัด --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="farmerDistrict">อำเภอ/เขต</label>
+                    <select id="farmerDistrict" name="district" required disabled>
+                        <option value="">-- เลือกอำเภอ/เขต --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="farmerSubDistrict">ตำบล/แขวง</label>
+                    <select id="farmerSubDistrict" name="subDistrict" required disabled>
+                        <option value="">-- เลือกตำบล/แขวง --</option>
+                    </select>
+                </div>
+                <div class="form-group">
                     <label for="purposeSelect">ความต้องการของคุณ</label>
                     <select id="purposeSelect" name="purpose" required>
                         <option value="">-- เลือกความต้องการ --</option>
@@ -995,7 +1126,7 @@ function getFarmerLoginPageHtml() {
                         <option value="other">อื่นๆ</option>
                     </select>
                 </div>
-                <div class="form-group" id="otherPurposeInput">
+                <div class="form-group" id="otherPurposeInput" style="display:none;">
                     <label for="otherPurpose">ระบุความต้องการอื่นๆ</label>
                     <textarea id="otherPurpose" name="otherPurpose" rows="3"></textarea>
                 </div>
@@ -1025,8 +1156,8 @@ function getSchoolDashboardHtml() {
             <div class="dashboard-buttons">
                 <button type="button" class="back-button" id="backToMainFromDashboard">ย้อนกลับ</button>
                 <button type="button" class="add-data-button" id="addWasteDataButton">เพิ่มข้อมูลเศษอาหาร</button>
-                <button type="button" class="analysis-button" id="viewAnalysisButton">กราฟวิเคราะห์ข้อมูล</button>
-                <button type="button" class="edit-profile-button" id="editProfileButton">โปรไฟล์</button>
+                <button type="button" class="analysis-button" id="viewAnalysisButton">ดูรายงานวิเคราะห์</button>
+                <button type="button" class="edit-profile-button" id="editProfileButton">แก้ไขข้อมูล</button>
                 <button type="button" class="knowledge-button" id="knowledgeButton">ความรู้เรื่องการกำจัดขยะ</button>
                 <button type="button" class="pending-delivery-button" id="pendingDeliveryButton">รายการเศษอาหารที่ต้องส่ง</button>
             </div>
@@ -1137,7 +1268,7 @@ function getPostDetailsHtml(postData) {
                     <p><strong>วันที่:</strong> ${date}</p>
                     <p><strong>โรงเรียน:</strong> ${postData.schoolInfo ? postData.schoolInfo.instituteName : 'ไม่ระบุโรงเรียน'}</p>
                     <p><strong>อีเมล:</strong> ${postData.schoolInfo ? postData.schoolInfo.email : 'ไม่ระบุ'}</p>
-                    <p><strong>ที่อยู่:</strong> ${postData.schoolInfo ? postData.schoolInfo.address : 'ไม่ระบุ'}</p>
+                    <p><strong>ที่อยู่:</strong> ${postData.schoolInfo ? `${postData.schoolInfo.subdistrict}, ${postData.schoolInfo.district}, ${postData.schoolInfo.province}` : 'ไม่ระบุ'}</p>
                     <p><strong>เบอร์ติดต่อ:</strong> ${postData.schoolInfo ? postData.schoolInfo.contactNumber : 'ไม่ระบุ'}</p>
                 </div>
             </div>
@@ -1166,13 +1297,22 @@ function getAnalysisPageHtml() {
 // Edit Profile Page HTML content
 function getEditProfilePageHtml(userData = {}) {
     const userRole = localStorage.getItem('userRole');
+    // School fields
     const instituteName = userData.instituteName || '';
-    const address = userData.address || '';
-    const contactNumber = userData.contactNumber || '';
-    const email = userData.email || '';
-    const name = userData.name || '';
+    const schoolProvince = userData.province || '';
+    const schoolDistrict = userData.district || '';
+    const schoolSubdistrict = userData.subdistrict || '';
+    const schoolContactNumber = userData.contactNumber || '';
+    // Farmer fields
+    const farmerName = userData.name || '';
+    const farmerContactNumber = userData.contactNumber || '';
+    const farmerAddress = userData.address || '';
+    const farmerProvince = userData.province || '';
+    const farmerDistrict = userData.district || '';
+    const farmerSubDistrict = userData.subDistrict || ''; // Note: original used subDistrict, keep consistent.
     const purpose = userData.purpose || '';
     const otherPurpose = userData.otherPurpose || '';
+    const email = userData.email || '';
 
     let roleSpecificFields = '';
     if (userRole === 'school') {
@@ -1182,23 +1322,59 @@ function getEditProfilePageHtml(userData = {}) {
                 <input type="text" id="editInstituteName" name="instituteName" value="${instituteName}" required>
             </div>
             <div class="form-group">
-                <label for="editAddress">ที่อยู่</label>
-                <input type="text" id="editAddress" name="address" value="${address}" required>
+                <label for="editProvinceSelect">จังหวัด</label>
+                <select id="editProvinceSelect" name="province" required>
+                    <option value="">-- เลือกจังหวัด --</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="editDistrictSelect">อำเภอ</label>
+                <select id="editDistrictSelect" name="district" required disabled>
+                    <option value="">-- เลือกอำเภอ --</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="editSubdistrictSelect">ตำบล</label>
+                <select id="editSubdistrictSelect" name="subdistrict" required disabled>
+                    <option value="">-- เลือกตำบล --</option>
+                </select>
             </div>
             <div class="form-group">
                 <label for="editContactNumber">เบอร์ติดต่อ</label>
-                <input type="tel" id="editContactNumber" name="contactNumber" value="${contactNumber}" required>
+                <input type="tel" id="editContactNumber" name="contactNumber" value="${schoolContactNumber}" required>
             </div>
         `;
     } else if (userRole === 'farmer') {
          roleSpecificFields = `
             <div class="form-group">
                 <label for="editFarmerName">ชื่อ</label>
-                <input type="text" id="editFarmerName" name="name" value="${name}" required>
+                <input type="text" id="editFarmerName" name="name" value="${farmerName}" required>
             </div>
             <div class="form-group">
-                <label for="editContactNumber">เบอร์ติดต่อ</label>
-                <input type="tel" id="editContactNumber" name="contactNumber" value="${contactNumber}" required>
+                <label for="editFarmerContactNumber">เบอร์ติดต่อ</label>
+                <input type="tel" id="editFarmerContactNumber" name="contactNumber" value="${farmerContactNumber}" required>
+            </div>
+            <div class="form-group">
+                <label for="editFarmerAddress">ที่อยู่ (บ้านเลขที่, ถนน, ซอย)</label>
+                <input type="text" id="editFarmerAddress" name="address" value="${farmerAddress}" required>
+            </div>
+            <div class="form-group">
+                <label for="editFarmerProvince">จังหวัด</label>
+                <select id="editFarmerProvince" name="province" required>
+                    <option value="">-- เลือกจังหวัด --</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="editFarmerDistrict">อำเภอ/เขต</label>
+                <select id="editFarmerDistrict" name="district" required disabled>
+                    <option value="">-- เลือกอำเภอ/เขต --</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="editFarmerSubDistrict">ตำบล/แขวง</label>
+                <select id="editFarmerSubDistrict" name="subDistrict" required disabled>
+                    <option value="">-- เลือกตำบล/แขวง --</option>
+                </select>
             </div>
             <div class="form-group">
                 <label for="editPurposeSelect">ความต้องการของคุณ</label>
@@ -1217,7 +1393,7 @@ function getEditProfilePageHtml(userData = {}) {
 
     return `
         <div class="edit-profile-container">
-            <h2>โปรไฟล์</h2>
+            <h2>แก้ไขข้อมูลส่วนตัว</h2>
             <form id="editProfileForm">
                 ${roleSpecificFields}
                 <div class="form-group">
@@ -1257,7 +1433,7 @@ function getKnowledgePageHtml() {
                     <li><strong>แยกตั้งแต่ต้นทาง:</strong> แบ่งถังขยะสำหรับเศษอาหารโดยเฉพาะในครัวเรือนหรือโรงเรียน</li>
                     <li><strong>เทน้ำออก:</strong> ก่อนทิ้งเศษอาหาร ควรเทน้ำหรือของเหลวส่วนเกินออกให้มากที่สุด เพื่อลดน้ำหนักและกลิ่น</li>
                     <li><strong>ใส่ภาชนะที่เหมาะสม:</strong> ใช้ถุงหรือภาชนะที่ปิดสนิทเพื่อป้องกันกลิ่นและสัตว์รบกวน</li>
-                    <li><strong>นำไปใช้ประโยชน์:</strong> หากเป็นไปได้ ลองนำเศษอาหารไปทำปุ๋ยหมักเองที่บ้าน หรือหาแหล่งรับซื้อ/รับบริจาคเศษอาหารในชุมชน</li>
+                    <li><strong>นำไปใช้ประโยชน์:</b> หากเป็นไปได้ ลองนำเศษอาหารไปทำปุ๋ยหมักเองที่บ้าน หรือหาแหล่งรับซื้อ/รับบริจาคเศษอาหารในชุมชน</li>
                 </ol>
 
                 <h3>แหล่งข้อมูลเพิ่มเติม:</h3>
@@ -1281,7 +1457,7 @@ function getPendingDeliveryHtml(pendingItems = []) {
     } else {
         pendingItems.forEach(item => {
             const date = new Date(item.date.toDate()).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
-            const receivedAt = new Date(item.receivedAt.toDate()).toLocaleDateString('th-TH', { hour: '2-digit', minute: '2-digit' });
+            const receivedAt = item.receivedAt ? new Date(item.receivedAt.toDate()).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) : 'ไม่ระบุ';
             pendingBlocksHtml += `
                 <div class="data-block pending-item">
                     <img src="${item.imageUrl || 'https://placehold.co/100x80/ADD8E6/000000?text=Waste+Pic'}" alt="Waste Image" class="data-item-image">
@@ -1314,6 +1490,7 @@ function getPendingDeliveryHtml(pendingItems = []) {
     `;
 }
 
+
 // NEW: Received Waste HTML (for Farmer)
 function getReceivedWasteHtml(receivedItems = []) {
     let receivedBlocksHtml = '';
@@ -1322,7 +1499,7 @@ function getReceivedWasteHtml(receivedItems = []) {
     } else {
         receivedItems.forEach(item => {
             const date = new Date(item.date.toDate()).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
-            const receivedAt = item.receivedAt ? new Date(item.receivedAt.toDate()).toLocaleDateString('th-TH', { hour: '2-digit', minute: '2-digit' }) : 'ไม่ระบุ';
+            const receivedAt = item.receivedAt ? new Date(item.receivedAt.toDate()).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) : 'ไม่ระบุ';
             const deliveredStatus = item.isDelivered ? 'ส่งมอบแล้ว' : 'รอส่งมอบ';
             receivedBlocksHtml += `
                 <div class="data-block received-item">
@@ -1357,6 +1534,7 @@ function getReceivedWasteHtml(receivedItems = []) {
     `;
 }
 
+
 // NEW: QR Code Display Page HTML
 function getQRCodeDisplayHtml(wasteId) {
     // In a real app, you'd use a QR code library to render a canvas or SVG QR.
@@ -1367,7 +1545,6 @@ function getQRCodeDisplayHtml(wasteId) {
             <p>กรุณาให้โรงเรียนสแกน QR Code นี้เพื่อยืนยันการรับเศษอาหาร</p>
             <div class="qr-code-box">
                 <p class="qr-code-text">Waste ID: ${wasteId}</p>
-                <!-- In a real app, a QR code image/canvas would go here -->
                 <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${wasteId}" alt="QR Code for Waste ID">
             </div>
             <div class="form-buttons">
@@ -1410,26 +1587,53 @@ async function loadSchoolDashboard() {
 async function loadFarmerDashboard(filters = {}) {
     loadContent(getFarmerDashboardHtml());
     try {
-        let query = db.collection('wasteentries').where('isDelivered', '==', false); // Only show undelivered for general view
+        let query = db.collection('wasteentries')
+                      .where('isDelivered', '==', false); // Only show undelivered for general view
 
-        // Apply filters
-        if (filters.weightMin) query = query.where('weight', '>=', parseFloat(filters.weightMin));
-        if (filters.weightMax) query = query.where('weight', '<=', parseFloat(filters.weightMax));
-        if (filters.date) {
-            const startDate = firebase.firestore.Timestamp.fromDate(new Date(filters.date));
-            const endDate = firebase.firestore.Timestamp.fromDate(new Date(new Date(filters.date).setDate(new Date(filters.date).getDate() + 1)));
-            query = query.where('date', '>=', startDate).where('date', '<', endDate);
-        }
-        // Filtering by menu and schoolName requires fetching all and then client-side filter
-        // since Firestore does not support case-insensitive contains or joins on multiple fields
-        // that are not part of an exact match or range query without complex indexing or client-side filtering.
-        // For simplicity and given previous context, we'll keep client-side filtering for these
-        // if precise Firestore queries become too complex or require specific indexes.
-        
-        // For now, we'll fetch all filterable items and then client-side filter for menu/schoolName if needed
-        const wasteEntriesSnapshot = await query.orderBy('postedAt', 'desc').get();
+        // Get current farmer's subdistrict for sorting
+        const currentUserSubDistrict = localStorage.getItem('userSubDistrict');
         let wasteData = [];
-        for (const doc of wasteEntriesSnapshot.docs) {
+
+        // First, fetch items from the same subdistrict if the user has one
+        if (currentUserSubDistrict) {
+            // Need to first query users to find schools in the same subDistrict
+            const schoolsInSameSubDistrictSnapshot = await db.collection('users')
+                .where('role', '==', 'school')
+                .where('subdistrict', '==', currentUserSubDistrict)
+                .get();
+            const schoolIdsInSameSubDistrict = schoolsInSameSubDistrictSnapshot.docs.map(doc => doc.id);
+
+            if (schoolIdsInSameSubDistrict.length > 0) {
+                const sameSubDistrictQuery = query.where('schoolId', 'in', schoolIdsInSameSubDistrict)
+                                                   .orderBy('postedAt', 'desc');
+                const sameSubDistrictSnapshot = await sameSubDistrictQuery.get();
+                for (const doc of sameSubDistrictSnapshot.docs) {
+                    const item = { id: doc.id, ...doc.data() };
+                    const schoolDoc = await db.collection('users').doc(item.schoolId).get();
+                    if (schoolDoc.exists) {
+                        item.schoolInfo = schoolDoc.data();
+                    }
+                    wasteData.push(item);
+                }
+            }
+        }
+        
+        // Then, fetch all other items (not in the same subdistrict or if user has no subdistrict)
+        // This part is tricky with Firestore due to query limitations (cannot combine 'in' with 'not-in' easily).
+        // A common pattern is to fetch all relevant data and then filter/sort client-side for complex logic.
+        // For simplicity, we'll fetch all *other* undelivered items and then merge and sort.
+        // This might result in duplicate fetches if `schoolId` 'in' is not optimized by Firestore for 'not-in' context.
+        // A more robust solution for large datasets might involve separate 'all' fetch then filter, or cloud functions.
+
+        // For now, let's just fetch all undelivered and then sort client-side after merging
+        // This will ensure all data is present and then we can sort as required.
+        const allWasteEntriesSnapshot = await db.collection('wasteentries')
+            .where('isDelivered', '==', false)
+            .orderBy('postedAt', 'desc')
+            .get();
+
+        let allFetchedWasteData = [];
+        for (const doc of allWasteEntriesSnapshot.docs) {
             const item = { id: doc.id, ...doc.data() };
             // Manually fetch school info for display
             if (item.schoolId) {
@@ -1438,18 +1642,42 @@ async function loadFarmerDashboard(filters = {}) {
                     item.schoolInfo = schoolDoc.data();
                 }
             }
-            wasteData.push(item);
+            allFetchedWasteData.push(item);
         }
 
-        // Apply client-side filters for menu and schoolName
+        // Apply client-side sorting: same subdistrict first, then by postedAt
+        if (currentUserSubDistrict) {
+            allFetchedWasteData.sort((a, b) => {
+                const aInSameSubDistrict = a.schoolInfo && a.schoolInfo.subdistrict === currentUserSubDistrict;
+                const bInSameSubDistrict = b.schoolInfo && b.schoolInfo.subdistrict === currentUserSubDistrict;
+
+                if (aInSameSubDistrict && !bInSameSubDistrict) return -1; // a comes first
+                if (!aInSameSubDistrict && bInSameSubDistrict) return 1;  // b comes first
+                
+                // If both are in same subdistrict or both are not, sort by postedAt
+                const timeA = a.postedAt ? a.postedAt.toMillis() : 0;
+                const timeB = b.postedAt ? b.postedAt.toMillis() : 0;
+                return timeB - timeA; // Newest first
+            });
+        } else {
+            // If no user subdistrict, just sort by postedAt
+            allFetchedWasteData.sort((a, b) => {
+                const timeA = a.postedAt ? a.postedAt.toMillis() : 0;
+                const timeB = b.postedAt ? b.postedAt.toMillis() : 0;
+                return timeB - timeA; // Newest first
+            });
+        }
+
+
+        // Apply client-side filters for menu and schoolName AFTER sorting by location
         if (filters.menu) {
-            wasteData = wasteData.filter(item => item.menu.toLowerCase().includes(filters.menu.toLowerCase()));
+            allFetchedWasteData = allFetchedWasteData.filter(item => item.menu.toLowerCase().includes(filters.menu.toLowerCase()));
         }
         if (filters.schoolName) {
-            wasteData = wasteData.filter(item => item.schoolInfo && item.schoolInfo.instituteName.toLowerCase().includes(filters.schoolName.toLowerCase()));
+            allFetchedWasteData = allFetchedWasteData.filter(item => item.schoolInfo && item.schoolInfo.instituteName.toLowerCase().includes(filters.schoolName.toLowerCase()));
         }
 
-        renderDataBlocks(wasteData, '#farmerDataBlocks');
+        renderDataBlocks(allFetchedWasteData, '#farmerDataBlocks');
 
         // Restore filter values if filters were applied
         if (filters.weightMin) document.getElementById('filterWeightMin').value = filters.weightMin;
@@ -1463,6 +1691,7 @@ async function loadFarmerDashboard(filters = {}) {
         document.querySelector('#farmerDataBlocks').innerHTML = '<p style="color: red; text-align: center;">ไม่สามารถโหลดข้อมูลได้</p>';
     }
 }
+
 
 async function applyFarmerFilters() {
     const filters = {
@@ -1607,15 +1836,13 @@ async function loadAnalysisPage() {
 
 // Load Edit Profile Page Function (fetches user data)
 async function loadEditProfilePage() {
-    loadContent(getEditProfilePageHtml()); // Load empty form first
+    const userId = localStorage.getItem('userId');
+    if (!userId) {
+        alert('ไม่พบข้อมูลผู้ใช้ กรุณาเข้าสู่ระบบใหม่');
+        loadMainPage();
+        return;
+    }
     try {
-        const userId = localStorage.getItem('userId');
-        if (!userId) {
-            alert('ไม่พบข้อมูลผู้ใช้ กรุณาเข้าสู่ระบบใหม่');
-            loadMainPage();
-            return;
-        }
-        // TODO: Update to your Render.com Backend URL
         const userDoc = await db.collection('users').doc(userId).get();
         if (!userDoc.exists) {
             alert('ไม่พบข้อมูลผู้ใช้');
@@ -1623,23 +1850,68 @@ async function loadEditProfilePage() {
             return;
         }
         const userData = userDoc.data();
-        
+        loadContent(getEditProfilePageHtml(userData)); // Load with initial data
+
         // Populate form fields
         document.getElementById('editEmail').value = userData.email || '';
-        if (document.getElementById('editInstituteName')) document.getElementById('editInstituteName').value = userData.instituteName || '';
-        if (document.getElementById('editAddress')) document.getElementById('editAddress').value = userData.address || '';
-        if (document.getElementById('editContactNumber')) document.getElementById('editContactNumber').value = userData.contactNumber || '';
-        if (document.getElementById('editFarmerName')) document.getElementById('editFarmerName').value = userData.name || '';
         
-        const purposeSelect = document.getElementById('editPurposeSelect');
-        if (purposeSelect) {
-            purposeSelect.value = userData.purpose || '';
-            const editOtherPurposeInput = document.getElementById('editOtherPurposeInput');
-            if (editOtherPurposeInput) {
-                editOtherPurposeInput.style.display = (userData.purpose === 'other' ? 'block' : 'none');
-                document.getElementById('editOtherPurpose').value = userData.otherPurpose || '';
+        const userRole = localStorage.getItem('userRole');
+
+        if (userRole === 'school') {
+            if (document.getElementById('editInstituteName')) document.getElementById('editInstituteName').value = userData.instituteName || '';
+            if (document.getElementById('editContactNumber')) document.getElementById('editContactNumber').value = userData.contactNumber || '';
+            
+            // Populate address dropdowns for school edit profile
+            populateProvinces('editProvinceSelect', userData.province);
+            if (userData.province) {
+                // Pass a temporary data attribute to store the district/subdistrict for pre-selection
+                const districtSelect = document.getElementById('editDistrictSelect');
+                const subdistrictSelect = document.getElementById('editSubdistrictSelect');
+                if (districtSelect) districtSelect.dataset.preselected = userData.district || '';
+                if (subdistrictSelect) subdistrictSelect.dataset.preselected = userData.subdistrict || '';
+
+                await populateDistricts('editProvinceSelect', 'editDistrictSelect', 'editSubdistrictSelect', userData.district);
+                if (userData.district) {
+                    await populateSubdistricts('editDistrictSelect', 'editSubdistrictSelect', userData.subdistrict);
+                }
+            }
+        } else if (userRole === 'farmer') {
+            if (document.getElementById('editFarmerName')) document.getElementById('editFarmerName').value = userData.name || '';
+            if (document.getElementById('editFarmerContactNumber')) document.getElementById('editFarmerContactNumber').value = userData.contactNumber || '';
+            
+            // NEW: Populate address fields for farmer
+            if (document.getElementById('editFarmerAddress')) document.getElementById('editFarmerAddress').value = userData.address || '';
+            
+            const farmerProvinceSelect = document.getElementById('editFarmerProvince');
+            if (farmerProvinceSelect) {
+                farmerProvinceSelect.value = userData.province || '';
+                // Trigger population of dependent dropdowns if province is set
+                if (userData.province) {
+                    // Pass a temporary data attribute to store the district/subDistrict for pre-selection
+                    const farmerDistrictSelect = document.getElementById('editFarmerDistrict');
+                    const farmerSubDistrictSelect = document.getElementById('editFarmerSubDistrict');
+                    if (farmerDistrictSelect) farmerDistrictSelect.dataset.preselected = userData.district || '';
+                    if (farmerSubDistrictSelect) farmerSubDistrictSelect.dataset.preselected = userData.subDistrict || ''; // Note: original used subDistrict
+
+                    await populateDistricts('editFarmerProvince', 'editFarmerDistrict', 'editFarmerSubDistrict', userData.district);
+                    if (userData.district) {
+                        await populateSubdistricts('editFarmerDistrict', 'editFarmerSubDistrict', userData.subDistrict); // Note: original used subDistrict
+                    }
+                }
+            }
+
+
+            const purposeSelect = document.getElementById('editPurposeSelect');
+            if (purposeSelect) {
+                purposeSelect.value = userData.purpose || '';
+                const editOtherPurposeInput = document.getElementById('editOtherPurposeInput');
+                if (editOtherPurposeInput) {
+                    editOtherPurposeInput.style.display = (userData.purpose === 'other' ? 'block' : 'none');
+                    document.getElementById('editOtherPurpose').value = userData.otherPurpose || '';
+                }
             }
         }
+        
         // Attach event listener for purposeSelect in edit profile page
         if (document.getElementById('editPurposeSelect')) {
             document.getElementById('editPurposeSelect').addEventListener('change', toggleEditOtherPurposeInput);
@@ -1753,6 +2025,121 @@ function toggleEditOtherPurposeInput() {
     }
 }
 
+// --- Thai Location Data (Simplified Example) ---
+// In a real application, you would load this from a more comprehensive source (e.g., JSON file, API)
+const thaiLocations = {
+    "ภูเก็ต": {
+    "เมืองภูเก็ต": ["ตลาดใหญ่", "ตลาดเหนือ", "รัษฎา", "วิชิต", "ฉลอง", "เกาะแก้ว", "ราไวย์", "กะรน"],
+    "กะทู้": ["กะทู้", "ป่าตอง", "กมลา"],
+    "ถลาง": ["เทพกระษัตรี", "ศรีสุนทร", "เชิงทะเล", "ป่าคลอก", "ไม้ขาว", "สาคู"]
+    },
+    "กระบี่": {
+        "เมืองกระบี่": ["กระบี่ใหญ่", "กระบี่น้อย", "ไสไทย"],
+        "อ่าวลึก": ["อ่าวลึกเหนือ", "แหลมสัก"]
+    },
+    "พังงา": {
+        "เมืองพังงา": ["ท้ายช้าง", "ถ้ำน้ำผุด"],
+        "ตะกั่วป่า": ["ตะกั่วป่า", "บางนายสี"]
+    }
+    // Add more provinces, districts, subdistricts as needed
+};
+
+function populateProvinces(provinceSelectId, selectedProvince = '') {
+    const provinceSelect = document.getElementById(provinceSelectId);
+    if (!provinceSelect) return;
+
+    provinceSelect.innerHTML = '<option value="">-- เลือกจังหวัด --</option>';
+    for (const province in thaiLocations) {
+        const option = document.createElement('option');
+        option.value = province;
+        option.textContent = province;
+        if (province === selectedProvince) {
+            option.selected = true;
+        }
+        provinceSelect.appendChild(option);
+    }
+    // Re-enable district select if a province is already selected (e.g., on edit profile)
+    if (selectedProvince) {
+        // Correctly determine districtSelectId and subdistrictSelectId based on provinceSelectId
+        let districtSelectId, subdistrictSelectId;
+        if (provinceSelectId.includes('edit')) {
+            districtSelectId = provinceSelectId.replace('Province', 'District');
+            subdistrictSelectId = provinceSelectId.replace('Province', 'Subdistrict');
+        } else {
+            districtSelectId = provinceSelectId.replace('province', 'district');
+            subdistrictSelectId = provinceSelectId.replace('province', 'subdistrict');
+        }
+
+        const districtSelect = document.getElementById(districtSelectId);
+        if (districtSelect) districtSelect.disabled = false;
+    }
+}
+
+function populateDistricts(provinceSelectId, districtSelectId, subdistrictSelectId, selectedDistrict = '') {
+    const provinceSelect = document.getElementById(provinceSelectId);
+    const districtSelect = document.getElementById(districtSelectId);
+    const subdistrictSelect = document.getElementById(subdistrictSelectId);
+
+    districtSelect.innerHTML = '<option value="">-- เลือกอำเภอ --</option>';
+    subdistrictSelect.innerHTML = '<option value="">-- เลือกตำบล --</option>';
+    districtSelect.disabled = true;
+    subdistrictSelect.disabled = true;
+
+    const selectedProvince = provinceSelect.value;
+    if (selectedProvince && thaiLocations[selectedProvince]) {
+        for (const district in thaiLocations[selectedProvince]) {
+            const option = document.createElement('option');
+            option.value = district;
+            option.textContent = district;
+            if (district === selectedDistrict) {
+                option.selected = true;
+            }
+            districtSelect.appendChild(option);
+        }
+        districtSelect.disabled = false;
+    }
+    // Re-populate subdistricts if a district is already selected (e.g., on edit profile)
+    if (selectedDistrict) {
+        populateSubdistricts(districtSelectId, subdistrictSelectId, subdistrictSelect.dataset.preselected || ''); // Use preselected value
+    }
+}
+
+function populateSubdistricts(districtSelectId, subdistrictSelectId, selectedSubdistrict = '') {
+    const districtSelect = document.getElementById(districtSelectId);
+    const subdistrictSelect = document.getElementById(subdistrictSelectId);
+
+    subdistrictSelect.innerHTML = '<option value="">-- เลือกตำบล --</option>';
+    subdistrictSelect.disabled = true;
+
+    // Correctly determine provinceSelectId based on districtSelectId
+    let provinceSelectId;
+    if (districtSelectId.includes('edit')) {
+        provinceSelectId = districtSelectId.replace('District', 'Province');
+    } else if (districtSelectId.includes('farmer')) {
+         provinceSelectId = districtSelectId.replace('District', 'Province'); // Handles farmer specific IDs
+    }
+    else {
+        provinceSelectId = districtSelectId.replace('district', 'province');
+    }
+
+    const provinceSelect = document.getElementById(provinceSelectId);
+    const selectedProvince = provinceSelect.value;
+    const selectedDistrict = districtSelect.value;
+
+    if (selectedProvince && selectedDistrict && thaiLocations[selectedProvince] && thaiLocations[selectedProvince][selectedDistrict]) {
+        thaiLocations[selectedProvince][selectedDistrict].forEach(subdistrict => {
+            const option = document.createElement('option');
+            option.value = subdistrict;
+            option.textContent = subdistrict;
+            if (subdistrict === selectedSubdistrict) {
+                option.selected = true;
+            }
+            subdistrictSelect.appendChild(option);
+        });
+        subdistrictSelect.disabled = false;
+    }
+}
+
 
 // Function to load the main page and attach event listeners
 function loadMainPage() {
@@ -1761,6 +2148,7 @@ function loadMainPage() {
     localStorage.removeItem('userRole');
     localStorage.removeItem('userId');
     localStorage.removeItem('userStars'); // Clear stars on logout
+    localStorage.removeItem('userSubDistrict'); // NEW: Clear farmer's subdistrict on logout
     loadContent(getMainPageHtml());
 }
 
