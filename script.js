@@ -10,7 +10,6 @@ const firebaseConfig = {
   appId: "1:186105687007:web:7f4395dfea7e8ac942326a",
   measurementId: "G-56SEESNQWF"
 };
-
 // --- IMPORTANT FIX: Declare auth, db, storage globally ---
 let auth;
 let db;
